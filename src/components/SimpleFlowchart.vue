@@ -185,7 +185,7 @@ export default {
 
           return [x + labelWidth, y + labelHeight + 41 * (buttonIndex + 0.5 - node.buttons.length)]
         } else {
-          if (buttonId === -1 && this.draggingLink && this.draggingLink.buttonIndex) { // this line is important! -1 means the condition is in dragginglink
+          if (buttonId === -1 && this.draggingLink && this.draggingLink.buttonIndex !== undefined) { // this line is important! -1 means the condition is in dragginglink
             const { buttonIndex } = this.draggingLink;
             // console.log({selected: this.draggingLink})
             // console.log({node, buttons: node.buttons})
