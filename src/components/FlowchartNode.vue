@@ -10,7 +10,7 @@
       @mouseup="inputMouseUp"
     ></div>
     <div :id="'node-main_' + id" class="node-main">
-       <div v-if="isStart" :id="'node-main_' + id" class="node-start">
+      <div v-if="isStart" :id="'node-main_' + id" class="node-start">
         <span>Conversation Start</span>
       </div>
       <div ref="nodeType" :id="'node-type_' + id" v-text="type" class="node-type"></div>
@@ -130,7 +130,7 @@ export default {
     }
   },
   methods: {
-     buttonPortStyle(index) {
+    buttonPortStyle(index) {
       const nodeTypeElement = this.$refs.nodeType;
       if (!nodeTypeElement) { return; }
 
@@ -141,8 +141,10 @@ export default {
       const labelTitleHeight = labelTitleElement.offsetHeight;
 
       let buttonHeight = labelTitleHeight + nodeTypeHeight;
+
+      let element = null;
       for (let i = index; i >= 0; i--) {
-        const element = document.getElementById('button_' + this.id + '_' + i);
+        element = document.getElementById('button_' + this.id + '_' + i);
         if(!element) { continue; }
         if(i === index) {
           buttonHeight += element.offsetHeight/1.75;
@@ -150,6 +152,15 @@ export default {
           buttonHeight += element.offsetHeight;
         }
       }
+      
+      let additionalHeight = 0;
+      if(this.isStart) {
+        const nodeStartTitleElement = document.getElementsByClassName('node-start')[0];
+
+        additionalHeight += nodeStartTitleElement ? nodeStartTitleElement.offsetHeight : 0;
+        additionalHeight = additionalHeight / 2;
+      }
+      buttonHeight += additionalHeight;
 
       return {
         top: buttonHeight + 'px',
