@@ -11,7 +11,7 @@
     ></div>
     <div :id="'node-main_' + id" class="node-main">
       <div v-if="isStart" :id="'node-main_' + id" class="node-start">
-        <span>Conversation Start</span>
+        <span>{{startNodeTitle}}</span>
       </div>
       <div ref="nodeType" :id="'node-type_' + id" v-text="type" class="node-type"></div>
       <div class="node-label" :id="'label_' + id">
@@ -44,6 +44,13 @@
 export default {
   name: 'FlowchartNode',
   props: {
+    startNodeTitle: {
+      type: String,
+      default: 'Conversation Start',
+      validator(val) {
+        return typeof val === 'string'
+      }
+    },
     id: {
       type: Number,
       default: 1000,
@@ -158,13 +165,13 @@ export default {
         const nodeStartTitleElement = document.getElementsByClassName('node-start')[0];
 
         additionalHeight += nodeStartTitleElement ? nodeStartTitleElement.offsetHeight : 0;
-        additionalHeight = additionalHeight / 2;
       }
       buttonHeight += additionalHeight;
 
       return {
         top: buttonHeight + 'px',
-        right: '-8px'
+        right: '-8px',
+        marginTop: '0px'
       }
     },
     handleMousedown(e) {

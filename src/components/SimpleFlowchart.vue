@@ -15,7 +15,9 @@
         @mousemove="handleMove" 
         @mouseup="handleUp"
         @mousedown="handleDown">
-        <flowchart-node v-bind.sync="node" 
+        <flowchart-node
+          v-bind.sync="node"
+          :startNodeTitle.sync="scene.startNodeTitle"  
           v-for="(node, index) in scene.nodes"
           :key="`node${index}`"
           :options="nodeOptions"
@@ -179,7 +181,6 @@ export default {
       if(node.isStart) {
         const nodeStartTitleElement = document.getElementsByClassName('node-start')[0];
         additionalHeight += nodeStartTitleElement ? nodeStartTitleElement.offsetHeight : 0;
-        additionalHeight = additionalHeight / 2;
       }
 
       if (type === 'right') {
@@ -194,11 +195,9 @@ export default {
             // console.log({node, buttons: node.buttons})
             // return [x + labelWidth, y + labelHeight + 41 * (buttonIndex + 0.5 - node.buttons.length)]
           } else {
-            return [x + labelWidth, y + labelHeight/2 + additionalHeight]
+            return [x + labelWidth, y + labelHeight/2 + additionalHeight/2]
           }
         }
-
-        additionalHeight = additionalHeight * 2;
 
         const nodeTypeElement = document.getElementById(`node-type_${node.id}`);
         if (!nodeTypeElement) { return [0, 0]; }
@@ -239,7 +238,7 @@ export default {
         // return [x + labelWidth, y + labelHeight + 41 * (buttonIndex + 0.5 - node.buttons.length)]
       }
       else if (type === 'left') {
-        return [x, y + labelHeight/2 + additionalHeight]
+        return [x, y + labelHeight/2 + additionalHeight/2]
       }
       // NOT USED YET =============================
       // if (type === 'top') {
