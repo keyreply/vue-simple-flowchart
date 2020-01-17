@@ -5,7 +5,7 @@
     @mouseleave="handleMouseLeave"
     v-bind:class="{selected: options.selected === id}"
   >
-    <div class="node-port node-input" :class="{ 'node-port-start': isStart }"
+    <div class="node-port node-input" :class="{ 'node-port-start': isStart, 'editing': options.selected === id, 'editing-start': isStart && options.selected === id }"
       @mousedown="inputMouseDown"
       @mouseup="inputMouseUp"
     ></div>
@@ -30,11 +30,19 @@
         </div>
       </div>
     </div>
-    <div v-if="buttons.length === 0" :id="'node-output_' + id" class="node-port node-output" :class="{ 'node-port-start': isStart }"
+    <div v-if="buttons.length === 0" :id="'node-output_' + id" class="node-port node-output" :class="{ 'node-port-start': isStart, 'editing': options.selected === id }"
       @mousedown="outputMouseDown"
       @mousemove="outputMouseMove"
       @mouseleave="outputMouseUp"
       @mouseup="outputMouseUp">
+    </div>
+    <div
+      v-if="options.selected === id"
+      :id="'add-button_' + id"
+      class="node-add-button"
+      @click="addingButton"
+    >
+      <span>Add other options...</span>
     </div>
     <div v-show="show.delete" class="node-delete">&times;</div>
   </div>
@@ -213,6 +221,23 @@ export default {
       this.$emit('linkingStop')
       e.preventDefault();
     },
+    addingButton(e) {
+      if (this.buttons) {
+        const maxButtonID = Math.max(0, ...this.buttons.map((button) => button.id));
+        this.buttons = [...this.buttons, {
+          id: maxButtonID + 1,
+          text: 'New option',
+        }]
+      } else {
+        this.buttons = [
+          {
+            id: 1,
+            text: 'Option 1',
+          }
+        ]
+      }
+      e.preventDefault();
+    },
   }
 }
 </script>
@@ -297,6 +322,12 @@ $portSize: 16;
       top: 50%;
       transform: translateY(-50%);
     }
+    &.editing {
+      margin-top: -22px;
+    }
+    &.editing-start {
+      margin-top: -5px;
+    }
   }
   .node-input {
     left: #{-2+$portSize/-3}px;
@@ -320,6 +351,19 @@ $portSize: 16;
     &:hover{
       background: $themeColor;
       color: white;
+    }
+  }
+  .node-add-button{
+    border: 1px solid #dfdfdf;
+    border-radius: 4px;
+    color: #EFEFEF;
+    background: #0084ff;
+    padding: 10px;
+    font-weight: 600;
+    &:hover {
+      color: #EFEFEF;
+      background: #0084ffb9;
+      cursor: pointer
     }
   }
 }
