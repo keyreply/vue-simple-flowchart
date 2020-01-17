@@ -41,6 +41,7 @@ export default {
       isRawScene: false,
       isPanelShow: false,
       scene: {
+        startNodeTitle: 'Conversation Start',
         centerX: 0,
         centerY: 0,
         scale: 1,
@@ -51,7 +52,17 @@ export default {
             y: 10,
             type: 'Action',
             label: 'Hello, This is KR dev bot! How can I help you?',
-            isStart: true
+            isStart: true,
+            buttons: [{
+              id: 1,
+              text: 'Option 1'
+            }, {
+              id: 2,
+              text: 'Option 2'
+            }, {
+              id: 3,
+              text: 'Option 3'
+            }]
           },
           {
             id: 2,
@@ -67,7 +78,7 @@ export default {
               text: 'No'
             }, {
               id: 3,
-              text: "I don't know"
+              text: "I don't know what to say but this sentence just to long I can't handle it"
             }]
           },
           {
@@ -89,7 +100,7 @@ export default {
           {
             id: 5,
             from: 1, // node id the link start
-            button: undefined,
+            button: 2,
             to: 2,  // node id the link end
           },
           {
