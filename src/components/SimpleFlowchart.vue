@@ -11,28 +11,32 @@
           <span>Action</span>
         </div>
       </div>
-      <div class="flowchart-container" 
-        @mousemove="handleMove" 
-        @mouseup="handleUp"
-        @mousedown="handleDown">
-        <flowchart-node
-          v-bind.sync="node"
-          :startNodeTitle.sync="scene.startNodeTitle"  
-          v-for="(node, index) in scene.nodes"
-          :key="`node${index}`"
-          :options="nodeOptions"
-          @linkingStart="linkingStart(node.id, $event)"
-          @linkingStop="linkingStop(node.id)"
-          @nodeSelected="nodeSelected(node.id, $event)">
-        </flowchart-node>
-        <svg width="100%" :height="`${height}px`">
-          <flowchart-link v-bind.sync="link"
-            v-for="(link, index) in lines()"
-            :key="`link${index}`"
-            @deleteLink="linkDelete(link.id)">
-          </flowchart-link>
-        </svg>
-      </div>
+      <v-touch class="flowchart-container"
+        @tap="pinchin"
+      >
+        <div 
+          @mousemove="handleMove" 
+          @mouseup="handleUp"
+          @mousedown="handleDown">
+          <flowchart-node
+            v-bind.sync="node"
+            :startNodeTitle.sync="scene.startNodeTitle"  
+            v-for="(node, index) in scene.nodes"
+            :key="`node${index}`"
+            :options="nodeOptions"
+            @linkingStart="linkingStart(node.id, $event)"
+            @linkingStop="linkingStop(node.id)"
+            @nodeSelected="nodeSelected(node.id, $event)">
+          </flowchart-node>
+          <svg width="100%" :height="`${height}px`">
+            <flowchart-link v-bind.sync="link"
+              v-for="(link, index) in lines()"
+              :key="`link${index}`"
+              @deleteLink="linkDelete(link.id)">
+            </flowchart-link>
+          </svg>
+        </div>
+      </v-touch>
       <div class="dragging-node" v-if="moving" :style="{ top: `${draggingNodeTop}px`, left: `${draggingNodeLeft}px` }">
         <div class="dragging-node-title" />
         <div class="dragging-node-label" />
@@ -117,6 +121,10 @@ export default {
     this.rootDivOffset.left = this.$el ? this.$el.offsetLeft : 0;
   },
   methods: {
+    pinchin(e) {
+      // eslint-disable-next-line
+      console.log({e});
+    },
     lines() {
       const lines = this.scene.links.map((link) => {
         const fromNode = this.findNodeWithID(link.from)
