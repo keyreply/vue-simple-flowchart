@@ -1,18 +1,18 @@
 <template>
   <div id="app">
     <div id="title">
-      <h1> simple flowchart</h1>
+      <h1>KeyReply Flowchart Editor Lab</h1>
       <div class="tool-wrapper">
-        <select v-model="newNodeType">
-          <option v-for="(item, index) in nodeCategory" :key="index" :value="index">{{item}}</option>
-        </select>
-        <input type="text" v-model="newNodeLabel" placeholder="Input node label">
-        <button @click="addNode">ADD</button>
+        <el-select v-model="newNodeType">
+          <el-option v-for="(item, index) in nodeCategory" :key="index" :value="index">{{item}}</el-option>
+        </el-select>
+        <el-input style="width: 300px" type="text" v-model="newNodeLabel" placeholder="Input node label" />
+        <el-button type="primary" @click="addNode">ADD</el-button>
       </div>
-      <button @click="isPanelShow = !isPanelShow">{{!isPanelShow ? 'Show Panel' : 'Hide Panel'}}</button>
-      <button v-if="isPanelShow" @click="isRawScene = !isRawScene">{{!isRawScene ? 'Show Raw' : 'Show Pretty'}}</button>
+      <el-button type="primary" @click="isPanelShow = !isPanelShow">{{!isPanelShow ? 'Show Panel' : 'Hide Panel'}}</el-button>
+      <el-button v-if="isPanelShow" @click="isRawScene = !isRawScene">{{!isRawScene ? 'Show Raw' : 'Show Pretty'}}</el-button>
       <div v-if="isPanelShow" class="panel-area">
-        <div v-html="isRawScene ? rawScene : prettyScene" class="extraction-panel" />
+        <el-card v-html="isRawScene ? rawScene : prettyScene" class="extraction-panel" />
       </div>
     </div>
     
@@ -21,6 +21,7 @@
       @nodeDelete="nodeDelete"
       @linkBreak="linkBreak"
       @linkAdded="linkAdded"
+      @buttonAdded="buttonAdded"
       @canvasClick="canvasClick"
       @onDropNewNode="onCreateNode"
       :height="800"/>
@@ -189,6 +190,9 @@ export default {
     },
     linkAdded(link) {
       console.log('new link added:', link);
+    },
+    buttonAdded(button) {
+      console.log('new button added:', button);
     }
   }
 }
@@ -208,6 +212,8 @@ export default {
     position: relative;
   }
   .panel-area {
+    margin-top: 15px;
+    margin-bottom: 15px;
     display: flex;
     flex-grow: 1;
     justify-content: center; 
@@ -216,11 +222,11 @@ export default {
     text-align: left;
     width: 60%;
     max-height: 300px;
-    border-width: 3px;
-    border-style: solid;
+    // border-width: 3px;
+    // border-style: solid;
     padding: 10px;
-    border-color: grey;
-    border-radius: 10px;
+    // border-color: grey;
+    // border-radius: 10px;
     overflow: scroll;
   }
 }
