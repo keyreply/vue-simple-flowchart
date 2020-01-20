@@ -222,20 +222,26 @@ export default {
       e.preventDefault();
     },
     addingButton(e) {
-      if (this.buttons) {
-        const maxButtonID = Math.max(0, ...this.buttons.map((button) => button.id));
-        this.buttons = [...this.buttons, {
-          id: maxButtonID + 1,
-          text: 'New option',
-        }]
-      } else {
-        this.buttons = [
-          {
-            id: 1,
-            text: 'Option 1',
-          }
-        ]
-      }
+      const maxButtonID = Math.max(0, ...this.buttons.map((button) => button.id));
+
+      this.$emit('addingButtons', {
+        id: maxButtonID + 1,
+        text: 'new option',
+      })
+      // if (this.buttons) {
+        
+        // this.buttons = [...this.buttons, {
+        //   id: maxButtonID + 1,
+        //   text: 'New option',
+        // }]
+      // } else {
+        // this.buttons = [
+        //   {
+        //     id: 1,
+        //     text: 'Option 1',
+        //   }
+        // ]
+      // }
       e.preventDefault();
     },
   }
