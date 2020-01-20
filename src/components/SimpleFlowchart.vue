@@ -127,18 +127,17 @@ export default {
       // eslint-disable-next-line
       console.log({e});
     },
-    addingButtons(id, button) {
+    addingButtons(id, newButton) {
       const node = this.findNodeWithID(id);
 
       if (node.buttons) {
-        node.buttons.push(button);
+        node.buttons.push(newButton);
       } else {
         this.scene.links = this.scene.links.filter((link) => link.from !== id);
-        node.buttons = [{
-          id: 1,
-          text: 'Option 1',
-        }]
+        node.buttons = [newButton]
       }
+
+
     },
     lines() {
       const lines = this.scene.links.map((link) => {
