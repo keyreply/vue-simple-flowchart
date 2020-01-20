@@ -20,6 +20,8 @@
           @mousedown="handleDown">
           <flowchart-node
             v-bind.sync="node"
+            :buttons.sync="node.buttons"
+            @addingButtons="addingButtons(node.id, $event)"
             :startNodeTitle.sync="scene.startNodeTitle"  
             v-for="(node, index) in scene.nodes"
             :key="`node${index}`"
@@ -124,6 +126,19 @@ export default {
     pinchin(e) {
       // eslint-disable-next-line
       console.log({e});
+    },
+    addingButtons(id, button) {
+      const node = this.findNodeWithID(id);
+
+      if (node.buttons) {
+        node.buttons.push(button);
+      } else {
+        this.scene.links = this.scene.links.filter((link) => link.from !== id);
+        node.buttons = [{
+          id: 1,
+          text: 'Option 1',
+        }]
+      }
     },
     lines() {
       const lines = this.scene.links.map((link) => {
