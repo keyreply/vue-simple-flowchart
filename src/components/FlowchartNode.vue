@@ -39,10 +39,18 @@
     <div
       v-if="options.selected === id"
       :id="'add-button_' + id"
-      class="node-add-button"
+      class="node-config-button"
       @click="addingButton"
     >
       <span>Add other options...</span>
+    </div>
+    <div
+      v-if="options.selected === id"
+      :id="'config-button_' + id"
+      class="node-config-button"
+      @click="showingDrawer"
+    >
+      <span>Show configurations...</span>
     </div>
     <div v-show="show.delete" class="node-delete">&times;</div>
   </div>
@@ -52,6 +60,18 @@
 export default {
   name: 'FlowchartNode',
   props: {
+    showDrawer: {
+      type: Object,
+      default() {
+        return {
+          left: false,
+          right: false,
+        }
+      },
+      validator(val) {
+        return typeof val === 'object'
+      }
+    },
     startNodeTitle: {
       type: String,
       default: 'Conversation Start',
@@ -228,20 +248,11 @@ export default {
         id: maxButtonID + 1,
         text: 'new option',
       })
-      // if (this.buttons) {
-        
-        // this.buttons = [...this.buttons, {
-        //   id: maxButtonID + 1,
-        //   text: 'New option',
-        // }]
-      // } else {
-        // this.buttons = [
-        //   {
-        //     id: 1,
-        //     text: 'Option 1',
-        //   }
-        // ]
-      // }
+      e.preventDefault();
+    },
+    showingDrawer(e) {
+      this.showDrawer.left = true;
+      this.showDrawer.right = true;
       e.preventDefault();
     },
   }
@@ -329,10 +340,10 @@ $portSize: 16;
       transform: translateY(-50%);
     }
     &.editing {
-      margin-top: -22px;
+      margin-top: -44px;
     }
     &.editing-start {
-      margin-top: -5px;
+      margin-top: -27px;
     }
   }
   .node-input {
@@ -359,7 +370,7 @@ $portSize: 16;
       color: white;
     }
   }
-  .node-add-button{
+  .node-config-button{
     border: 1px solid #dfdfdf;
     border-radius: 4px;
     color: #EFEFEF;
