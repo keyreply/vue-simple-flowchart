@@ -20,7 +20,7 @@
           @mousedown="handleDown">
           <flowchart-node
             v-bind.sync="node"
-            :buttons.sync="node.buttons"
+            :showDrawer.sync="showDrawer"
             @addingButtons="addingButtons(node.id, $event)"
             :startNodeTitle.sync="scene.startNodeTitle"  
             v-for="(node, index) in scene.nodes"
@@ -75,7 +75,16 @@ export default {
     onDropNewNode: {
       type: Function,
       default: () => {}
-    }
+    },
+    showDrawer: {
+      type: Object,
+      default() {
+        return {
+          left: false,
+          right: false,
+        }
+      },
+    },
   },
   data() {
     return {
@@ -136,8 +145,6 @@ export default {
         this.scene.links = this.scene.links.filter((link) => link.from !== id);
         node.buttons = [newButton]
       }
-
-
     },
     lines() {
       const lines = this.scene.links.map((link) => {

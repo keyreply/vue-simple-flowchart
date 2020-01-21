@@ -16,7 +16,9 @@
       </div>
     </div>
     
-    <simple-flowchart :scene.sync="scene" 
+    <simple-flowchart
+      :scene.sync="scene"
+      :showDrawer.sync="showDrawer"
       @nodeClick="nodeClick"
       @nodeDelete="nodeDelete"
       @linkBreak="linkBreak"
@@ -25,6 +27,25 @@
       @canvasClick="canvasClick"
       @onDropNewNode="onCreateNode"
       :height="800"/>
+    
+    <el-drawer
+      title="I am LEFT"
+      :visible.sync="showDrawer.left"
+      direction="ltr"
+      :before-close="closingDrawer"
+      size="30%"
+    >
+      <span>Hi, there!</span>
+    </el-drawer>
+    <el-drawer
+      title="I am RIGHT"
+      :visible.sync="showDrawer.right"
+      direction="rtl"
+      :before-close="closingDrawer"
+      size="70%"
+    >
+      <span>Hi, there!</span>
+    </el-drawer>
   </div>
 </template>
 
@@ -41,6 +62,10 @@ export default {
     return {
       isRawScene: false,
       isPanelShow: false,
+      showDrawer: {
+        left: false,
+        right: false,
+      },
       scene: {
         startNodeTitle: 'Conversation Start',
         centerX: 0,
@@ -193,7 +218,15 @@ export default {
     },
     buttonAdded(button) {
       console.log('new button added:', button);
-    }
+    },
+    closingDrawer(done) {
+      done();
+      // this.$confirm('Are you sure you want to close this?')
+      //   .then(_ => {
+      //     done();
+      //   })
+      //   .catch(_ => {});
+    },
   }
 }
 </script>
