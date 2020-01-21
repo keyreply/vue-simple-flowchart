@@ -15,7 +15,10 @@
       </div>
       <div ref="nodeType" :id="'node-type_' + id" v-text="type" class="node-type"></div>
       <div class="node-label" :id="'label_' + id">
-        <div ref="labelTitle" class="node-label-title" :id="'label-title_' + id" v-text="label" />
+        <div :style="options.selected === id ? 'margin: 10px' : null">
+          <el-input v-if="options.selected === id" type="textarea" v-model="form.label" placeholder="Input node label" />
+          <div v-else ref="labelTitle" class="node-label-title" :id="'label-title_' + id" v-text="label" />
+        </div>
         <div v-if="buttons.length > 0" class="node-buttons" :id="'node-buttons_' + id">
           <div v-for="(button, index) in buttons" :key="index" :id="'button_' + id + '_' + index" class="node-label-button">
             <span>{{button.text}}</span>
@@ -150,10 +153,18 @@ export default {
       show: {
         delete: false,
       },
-      linkingStart: false
+      linkingStart: false,
+      form: {
+        label: '',
+        options: [],
+      },
     }
   },
   mounted() {
+    // this.form = {
+    //   label: this.label,
+    //   options: this.buttons.map((button) => button.text),
+    // }
   },
   computed: {
     nodeStyle() {
