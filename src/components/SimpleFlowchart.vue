@@ -93,6 +93,7 @@ export default {
         dragging: false,
         scrolling: false,
         selected: 0,
+        moving: false
       },
       mouse: {
         x: 0,
@@ -124,6 +125,7 @@ export default {
         offsetTop: this.rootDivOffset.top,
         offsetLeft: this.rootDivOffset.left,
         selected: this.action.selected,
+        moving: this.action.moving
       }
     },
   },
@@ -342,6 +344,7 @@ export default {
         [this.draggingLink.mx, this.draggingLink.my] = [this.mouse.x - toolbarWidth, this.mouse.y - titleHeight];
       }
       if (this.action.dragging) {
+        this.action.moving = true;
         this.mouse.x = e.pageX || e.clientX + document.documentElement.scrollLeft
         this.mouse.y = e.pageY || e.clientY + document.documentElement.scrollTop
         let diffX = this.mouse.x - this.mouse.lastX;
@@ -387,6 +390,7 @@ export default {
       this.action.linking = false;
       this.action.dragging = null;
       this.action.scrolling = false;
+      this.action.moving = false;
     },
     handleDown(e) {
       const target = e.target || e.srcElement;

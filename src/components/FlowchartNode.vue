@@ -5,7 +5,7 @@
     @mouseleave="handleMouseLeave"
     v-bind:class="{selected: options.selected === id}"
   >
-    <div class="node-port node-input" :class="{ 'node-port-start': isStart, 'editing': options.selected === id, 'editing-start': isStart && options.selected === id }"
+    <div class="node-port node-input" :class="{ 'node-port-start': isStart, 'editing': options.selected === id && !options.moving, 'editing-start': isStart && options.selected === id && !options.dragging }"
       @mousedown="inputMouseDown"
       @mouseup="inputMouseUp"
     ></div>
@@ -30,14 +30,14 @@
         </div>
       </div>
     </div>
-    <div v-if="buttons.length === 0" :id="'node-output_' + id" class="node-port node-output" :class="{ 'node-port-start': isStart, 'editing': options.selected === id }"
+    <div v-if="buttons.length === 0" :id="'node-output_' + id" class="node-port node-output" :class="{ 'node-port-start': isStart, 'editing': options.selected === id && !options.moving }"
       @mousedown="outputMouseDown"
       @mousemove="outputMouseMove"
       @mouseleave="outputMouseUp"
       @mouseup="outputMouseUp">
     </div>
     <div
-      v-if="options.selected === id"
+      v-if="options.selected === id && !options.moving"
       :id="'add-button_' + id"
       class="node-config-button"
       @click="addingButton"
@@ -45,7 +45,7 @@
       <span>Add other options...</span>
     </div>
     <div
-      v-if="options.selected === id"
+      v-if="options.selected === id && !options.moving"
       :id="'config-button_' + id"
       class="node-config-button"
       @click="showingDrawer"
