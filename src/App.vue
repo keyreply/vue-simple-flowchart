@@ -1,24 +1,51 @@
 <template>
   <div id="app">
     <div id="title">
-      <h1> simple flowchart</h1>
+      <h1>KeyReply Flowchart Editor Lab</h1>
       <div class="tool-wrapper">
-        <select v-model="newNodeType">
-          <option v-for="(item, index) in nodeCategory" :key="index" :value="index">{{item}}</option>
-        </select>
-        <input type="text" v-model="newNodeLabel" placeholder="Input node label">
-        <button @click="addNode">ADD</button>
+        <el-select v-model="newNodeType">
+          <el-option v-for="(item, index) in nodeCategory" :key="index" :value="index">{{item}}</el-option>
+        </el-select>
+        <el-input style="width: 300px" type="text" v-model="newNodeLabel" placeholder="Input node label" />
+        <el-button type="primary" @click="addNode">ADD</el-button>
+      </div>
+      <el-button type="primary" @click="isPanelShow = !isPanelShow">{{!isPanelShow ? 'Show Panel' : 'Hide Panel'}}</el-button>
+      <el-button v-if="isPanelShow" @click="isRawScene = !isRawScene">{{!isRawScene ? 'Show Raw' : 'Show Pretty'}}</el-button>
+      <div v-if="isPanelShow" class="panel-area">
+        <el-card v-html="isRawScene ? rawScene : prettyScene" class="extraction-panel" />
       </div>
     </div>
     
-    <simple-flowchart :scene.sync="scene" 
+    <simple-flowchart
+      :scene.sync="scene"
+      :showDrawer.sync="showDrawer"
       @nodeClick="nodeClick"
       @nodeDelete="nodeDelete"
       @linkBreak="linkBreak"
       @linkAdded="linkAdded"
+      @buttonAdded="buttonAdded"
       @canvasClick="canvasClick"
       @onDropNewNode="onCreateNode"
       :height="800"/>
+    
+    <el-drawer
+      title="I am LEFT"
+      :visible.sync="showDrawer.left"
+      direction="ltr"
+      :before-close="closingDrawer"
+      size="30%"
+    >
+      <span>Hi, there!</span>
+    </el-drawer>
+    <el-drawer
+      title="I am RIGHT"
+      :visible.sync="showDrawer.right"
+      direction="rtl"
+      :before-close="closingDrawer"
+      size="70%"
+    >
+      <span>Hi, there!</span>
+    </el-drawer>
   </div>
 </template>
 
@@ -33,7 +60,14 @@ export default {
   },
   data() {
     return {
+      isRawScene: false,
+      isPanelShow: false,
+      showDrawer: {
+        left: false,
+        right: false,
+      },
       scene: {
+        startNodeTitle: 'Conversation Start',
         centerX: 0,
         centerY: 0,
         scale: 1,
@@ -44,7 +78,17 @@ export default {
             y: 10,
             type: 'Action',
             label: 'Hello, This is KR dev bot! How can I help you?',
-            isStart: true
+            isStart: true,
+            buttons: [{
+              id: 1,
+              text: 'Option 1'
+            }, {
+              id: 2,
+              text: 'Option 2'
+            }, {
+              id: 3,
+              text: 'Option 3'
+            }]
           },
           {
             id: 2,
@@ -60,7 +104,7 @@ export default {
               text: 'No'
             }, {
               id: 3,
-              text: "I don't know"
+              text: "I don't know what to say but this sentence just to long I can't handle it"
             }]
           },
           {
@@ -82,7 +126,7 @@ export default {
           {
             id: 5,
             from: 1, // node id the link start
-            button: undefined,
+            button: 2,
             to: 2,  // node id the link end
           },
           {
@@ -103,6 +147,12 @@ export default {
             button: undefined,
             to: 4,  // node id the link end
           },
+          {
+            id: 9,
+            from: 4, // node id the link start
+            button: undefined,
+            to: 1,  // node id the link end
+          },
         ]
       },
       newNodeType: 0,
@@ -115,6 +165,14 @@ export default {
         'fork',
         'join',
       ],
+    }
+  },
+  computed: {
+    prettyScene() {
+      return JSON.stringify(this.scene, null, '\t').replace(/\n/gi, '<br />').replace(/\t/gi, '&nbsp;&nbsp;')
+    },
+    rawScene() {
+      return JSON.stringify(this.scene);
     }
   },
   methods: {
@@ -157,7 +215,18 @@ export default {
     },
     linkAdded(link) {
       console.log('new link added:', link);
-    }
+    },
+    buttonAdded(button) {
+      console.log('new button added:', button);
+    },
+    closingDrawer(done) {
+      done();
+      // this.$confirm('Are you sure you want to close this?')
+      //   .then(_ => {
+      //     done();
+      //   })
+      //   .catch(_ => {});
+    },
   }
 }
 </script>
@@ -174,6 +243,24 @@ export default {
   height: 1280px;
   .tool-wrapper {
     position: relative;
+  }
+  .panel-area {
+    margin-top: 15px;
+    margin-bottom: 15px;
+    display: flex;
+    flex-grow: 1;
+    justify-content: center; 
+  }
+  .extraction-panel {
+    text-align: left;
+    width: 60%;
+    max-height: 300px;
+    // border-width: 3px;
+    // border-style: solid;
+    padding: 10px;
+    // border-color: grey;
+    // border-radius: 10px;
+    overflow: scroll;
   }
 }
 </style>
