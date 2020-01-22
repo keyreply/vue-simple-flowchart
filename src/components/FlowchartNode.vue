@@ -5,18 +5,18 @@
     @mouseleave="handleMouseLeave"
     v-bind:class="{selected: options.selected === id}"
   >
-    <div class="node-port node-input" :class="{ 'node-port-start': isStart }"
+    <div class="node-port node-input" :class="{ 'node-port-start': isStart, 'editing': options.selected === id && !options.moving, 'editing-start': isStart && options.selected === id && !options.dragging }"
       @mousedown="inputMouseDown"
       @mouseup="inputMouseUp"
     ></div>
     <div :id="'node-main_' + id" class="node-main">
-      <div v-if="isStart" class="node-start">
-        <span>Conversation Start</span>
+      <div v-if="isStart" :id="'node-main_' + id" class="node-start">
+        <span>{{startNodeTitle}}</span>
       </div>
       <div ref="nodeType" :id="'node-type_' + id" v-text="type" class="node-type"></div>
       <div class="node-label" :id="'label_' + id">
         <div ref="labelTitle" class="node-label-title" :id="'label-title_' + id" v-text="label" />
-        <div v-if="buttons.length > 0" class="node-buttons">
+        <div v-if="buttons.length > 0" class="node-buttons" :id="'node-buttons_' + id">
           <div v-for="(button, index) in buttons" :key="index" :id="'button_' + id + '_' + index" class="node-label-button">
             <span>{{button.text}}</span>
             <div class="node-port node-output" :id="'port_' + id + '_' + index" :class="{ 'node-port-start': isStart }" 
@@ -30,11 +30,27 @@
         </div>
       </div>
     </div>
-    <div v-if="buttons.length === 0" :id="'node-output_' + id" class="node-port node-output" :class="{ 'node-port-start': isStart }"
+    <div v-if="buttons.length === 0" :id="'node-output_' + id" class="node-port node-output" :class="{ 'node-port-start': isStart, 'editing': options.selected === id && !options.moving }"
       @mousedown="outputMouseDown"
       @mousemove="outputMouseMove"
-      @mouseup="outputMouseUp"
-      @mouseleave="outputMouseUp">
+      @mouseleave="outputMouseUp"
+      @mouseup="outputMouseUp">
+    </div>
+    <div
+      v-if="options.selected === id && !options.moving"
+      :id="'add-button_' + id"
+      class="node-config-button"
+      @click="addingButton"
+    >
+      <span>Add other options...</span>
+    </div>
+    <div
+      v-if="options.selected === id && !options.moving"
+      :id="'config-button_' + id"
+      class="node-config-button"
+      @click="showingDrawer"
+    >
+      <span>Show configurations...</span>
     </div>
     <div v-show="show.delete" class="node-delete">&times;</div>
   </div>
@@ -44,6 +60,25 @@
 export default {
   name: 'FlowchartNode',
   props: {
+    showDrawer: {
+      type: Object,
+      default() {
+        return {
+          left: false,
+          right: false,
+        }
+      },
+      validator(val) {
+        return typeof val === 'object'
+      }
+    },
+    startNodeTitle: {
+      type: String,
+      default: 'Conversation Start',
+      validator(val) {
+        return typeof val === 'string'
+      }
+    },
     id: {
       type: Number,
       default: 1000,
@@ -130,7 +165,7 @@ export default {
     }
   },
   methods: {
-     buttonPortStyle(index) {
+    buttonPortStyle(index) {
       const nodeTypeElement = this.$refs.nodeType;
       if (!nodeTypeElement) { return; }
 
@@ -141,8 +176,10 @@ export default {
       const labelTitleHeight = labelTitleElement.offsetHeight;
 
       let buttonHeight = labelTitleHeight + nodeTypeHeight;
+
+      let element = null;
       for (let i = index; i >= 0; i--) {
-        const element = document.getElementById('button_' + this.id + '_' + i);
+        element = document.getElementById('button_' + this.id + '_' + i);
         if(!element) { continue; }
         if(i === index) {
           buttonHeight += element.offsetHeight/1.75;
@@ -150,16 +187,23 @@ export default {
           buttonHeight += element.offsetHeight;
         }
       }
+      
+      let additionalHeight = 0;
+      if(this.isStart) {
+        const nodeStartTitleElement = document.getElementsByClassName('node-start')[0];
+
+        additionalHeight += nodeStartTitleElement ? nodeStartTitleElement.offsetHeight : 0;
+      }
+      buttonHeight += additionalHeight;
 
       return {
         top: buttonHeight + 'px',
-        right: '-8px'
+        right: '-8px',
+        marginTop: '0px'
       }
     },
     handleMousedown(e) {
       const target = e.target || e.srcElement;
-      // // eslint-disable-next-line
-      // console.log({target});
       if (target.className.indexOf('node-input') < 0 && target.className.indexOf('node-output') < 0) {
         this.$emit('nodeSelected', e);
       }
@@ -181,7 +225,6 @@ export default {
         this.$emit('linkingStart')
       }
     },
-    // eslint-disable-next-line
     outputMouseMoveFromButtonNode(buttonIndex) {
       if(this.linkingStart) {
         this.$emit('linkingStart', buttonIndex)
@@ -196,6 +239,20 @@ export default {
     },
     inputMouseUp(e) {
       this.$emit('linkingStop')
+      e.preventDefault();
+    },
+    addingButton(e) {
+      const maxButtonID = Math.max(0, ...this.buttons.map((button) => button.id));
+
+      this.$emit('addingButtons', {
+        id: maxButtonID + 1,
+        text: 'new option',
+      })
+      e.preventDefault();
+    },
+    showingDrawer(e) {
+      this.showDrawer.left = true;
+      this.showDrawer.right = true;
       e.preventDefault();
     },
   }
@@ -282,6 +339,12 @@ $portSize: 16;
       top: 50%;
       transform: translateY(-50%);
     }
+    &.editing {
+      margin-top: -44px;
+    }
+    &.editing-start {
+      margin-top: -27px;
+    }
   }
   .node-input {
     left: #{-2+$portSize/-3}px;
@@ -305,6 +368,19 @@ $portSize: 16;
     &:hover{
       background: $themeColor;
       color: white;
+    }
+  }
+  .node-config-button{
+    border: 1px solid #dfdfdf;
+    border-radius: 4px;
+    color: #EFEFEF;
+    background: #0084ff;
+    padding: 10px;
+    font-weight: 600;
+    &:hover {
+      color: #EFEFEF;
+      background: #0084ffb9;
+      cursor: pointer
     }
   }
 }

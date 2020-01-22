@@ -1,7 +1,5 @@
 <template>
   <div @mouseup="itemRelease" @mousemove="itemMove">
-    <!-- <p>{{JSON.stringify(lines())}}</p>
-    <p>{{JSON.stringify(mouse)}}</p> -->
     <div id="flowchart" class="flowchart"   @dragstart="onDragStart">
       <div id="toolbar" class="flowchart-toolbar">
         <div class="flowchart-toolbar-item" @mousedown="(e) => itemClick(e, 'Rule')">
@@ -13,26 +11,34 @@
           <span>Action</span>
         </div>
       </div>
-      <div class="flowchart-container" 
-        @mousemove="handleMove" 
-        @mouseup="handleUp"
-        @mousedown="handleDown">
-        <flowchart-node v-bind.sync="node" 
-          v-for="(node, index) in scene.nodes" 
-          :key="`node${index}`"
-          :options="nodeOptions"
-          @linkingStart="linkingStart(node.id, $event)"
-          @linkingStop="linkingStop(node.id)"
-          @nodeSelected="nodeSelected(node.id, $event)">
-        </flowchart-node>
-        <svg width="100%" :height="`${height}px`">
-          <flowchart-link v-bind.sync="link"
-            v-for="(link, index) in lines()"
-            :key="`link${index}`"
-            @deleteLink="linkDelete(link.id)">
-          </flowchart-link>
-        </svg>
-      </div>
+      <v-touch class="flowchart-container"
+        @tap="pinchin"
+      >
+        <div 
+          @mousemove="handleMove" 
+          @mouseup="handleUp"
+          @mousedown="handleDown">
+          <flowchart-node
+            v-bind.sync="node"
+            :showDrawer.sync="showDrawer"
+            @addingButtons="addingButtons(node.id, $event)"
+            :startNodeTitle.sync="scene.startNodeTitle"  
+            v-for="(node, index) in scene.nodes"
+            :key="`node${index}`"
+            :options="nodeOptions"
+            @linkingStart="linkingStart(node.id, $event)"
+            @linkingStop="linkingStop(node.id)"
+            @nodeSelected="nodeSelected(node.id, $event)">
+          </flowchart-node>
+          <svg width="100%" :height="`${height}px`">
+            <flowchart-link v-bind.sync="link"
+              v-for="(link, index) in lines()"
+              :key="`link${index}`"
+              @deleteLink="linkDelete(link.id)">
+            </flowchart-link>
+          </svg>
+        </div>
+      </v-touch>
       <div class="dragging-node" v-if="moving" :style="{ top: `${draggingNodeTop}px`, left: `${draggingNodeLeft}px` }">
         <div class="dragging-node-title" />
         <div class="dragging-node-label" />
@@ -53,6 +59,7 @@ export default {
       type: Object,
       default() {
         return {
+          startNodeTitle: 'Conversation Start',
           centerX: 0,
           scale: 1,
           centerY: 0,
@@ -68,7 +75,16 @@ export default {
     onDropNewNode: {
       type: Function,
       default: () => {}
-    }
+    },
+    showDrawer: {
+      type: Object,
+      default() {
+        return {
+          left: false,
+          right: false,
+        }
+      },
+    },
   },
   data() {
     return {
@@ -77,6 +93,7 @@ export default {
         dragging: false,
         scrolling: false,
         selected: 0,
+        moving: false
       },
       mouse: {
         x: 0,
@@ -108,6 +125,7 @@ export default {
         offsetTop: this.rootDivOffset.top,
         offsetLeft: this.rootDivOffset.left,
         selected: this.action.selected,
+        moving: this.action.moving
       }
     },
   },
@@ -116,6 +134,20 @@ export default {
     this.rootDivOffset.left = this.$el ? this.$el.offsetLeft : 0;
   },
   methods: {
+    pinchin(e) {
+      // eslint-disable-next-line
+      console.log({e});
+    },
+    addingButtons(id, newButton) {
+      const node = this.findNodeWithID(id);
+
+      if (node.buttons) {
+        node.buttons.push(newButton);
+      } else {
+        this.scene.links = this.scene.links.filter((link) => link.from !== id);
+        node.buttons = [newButton]
+      }
+    },
     lines() {
       const lines = this.scene.links.map((link) => {
         const fromNode = this.findNodeWithID(link.from)
@@ -124,10 +156,10 @@ export default {
 
         x = this.scene.centerX + (fromNode.centeredX || fromNode.x);
         y = this.scene.centerY + (fromNode.centeredY || fromNode.y);
-        [cx, cy] = this.getPortPosition(fromNode.id, 'right', x, y, fromNode.isStart, link.button, fromNode);
+        [cx, cy] = this.getPortPosition(fromNode, 'right', x, y, link.button);
         x = this.scene.centerX + (toNode.centeredX || toNode.x);
         y = this.scene.centerY + (toNode.centeredY || toNode.y);
-        [ex, ey] = this.getPortPosition(toNode.id, 'left', x, y, toNode.isStart);
+        [ex, ey] = this.getPortPosition(toNode, 'left', x, y);
         return { 
           start: [cx, cy], 
           end: [ex, ey],
@@ -139,7 +171,7 @@ export default {
         const fromNode = this.findNodeWithID(this.draggingLink.from);
         x = this.scene.centerX + (fromNode.centeredX || fromNode.x);
         y = this.scene.centerY + (fromNode.centeredY || fromNode.y);
-        [cx, cy] = this.getPortPosition(fromNode.id, 'right', x, y, fromNode.isStart, null, fromNode);
+        [cx, cy] = this.getPortPosition(fromNode, 'right', x, y, -1);
         // push temp dragging link, mouse cursor postion = link end postion 
         lines.push({ 
           start: [cx, cy],
@@ -153,37 +185,91 @@ export default {
         return id === item.id
       })
     },
-    getPortPosition(id, type, x, y, isStart, buttonId, fromNode) {
-      const labelElement = document.getElementById('node-main_' + id);
-
-      let labelHeight = 0;
-      let labelWidth = 0;
+    getPortPosition(node, type, x, y, buttonId) {
+      // const nodeTypeElement = document.getElementById('node-type_' + id);
+      const labelElement = document.getElementById('node-main_' + node.id);
+      // const nodeButtonsElement = document.getElementById('node-buttons_' + id);
+      // let nodeTypeHeight = 0;
+          // nodeTypeWidth = 0;
+      // if (nodeTypeElement) {
+      //   nodeTypeHeight = nodeTypeElement.offsetHeight;
+        // nodeTypeWidth = nodeTypeElement.offsetWidth;
+      // }
+      let labelHeight = 0,
+          labelWidth = 0;
       if (labelElement) {
         labelHeight = labelElement.offsetHeight;
         labelWidth = labelElement.offsetWidth;
       }
+      // let buttonsHeight = 0;
+          // buttonsWidth = 0;
+      // if (nodeButtonsElement) {
+      //   buttonsHeight = nodeButtonsElement.offsetHeight;
+        // buttonsWidth = nodeButtonsElement.offsetWidth;
+      // }
+      // check if start node, then add margin top by 50px (manually)
+      let additionalHeight = 0;
+      if(node.isStart) {
+        const nodeStartTitleElement = document.getElementsByClassName('node-start')[0];
+        additionalHeight += nodeStartTitleElement ? nodeStartTitleElement.offsetHeight : 0;
+      }
 
       if (type === 'right') {
-        if (buttonId) {
-          const buttonIndex = fromNode.buttons.findIndex((item) => item.id === buttonId);
+        let buttonIndex = null;
 
-          return [x + labelWidth, y + labelHeight + 41 * (buttonIndex + 0.5 - fromNode.buttons.length)]
+        if (buttonId && buttonId !== -1) {
+          buttonIndex = node.buttons.findIndex((button) => button.id === buttonId);
         } else {
-          if (this.draggingLink && this.draggingLink.buttonIndex) {
-            const { buttonIndex } = this.draggingLink;
-
-            return [x + labelWidth, y + labelHeight + 41 * (buttonIndex + 0.5 - fromNode.buttons.length)]
+            if (buttonId === -1 && this.draggingLink && this.draggingLink.buttonIndex !== undefined) { // this line is important! -1 means the condition is in dragginglink
+            buttonIndex = this.draggingLink.buttonIndex;
+            // console.log({selected: this.draggingLink})
+            // console.log({node, buttons: node.buttons})
+            // return [x + labelWidth, y + labelHeight + 41 * (buttonIndex + 0.5 - node.buttons.length)]
           } else {
-            if (isStart) {
-              return [x + labelWidth, y + labelHeight/2 + 17]
-            } else {
-              return [x + labelWidth, y + labelHeight/2]
-            }
+            return [x + labelWidth, y + labelHeight/2 + additionalHeight/2]
           }
         }
+
+        const nodeTypeElement = document.getElementById(`node-type_${node.id}`);
+        if (!nodeTypeElement) { return [0, 0]; }
+
+        const labelTitleElement = document.getElementById(`label-title_${node.id}`);
+        if (!labelTitleElement) { return [0, 0]; }
+
+        // if (nodeTypeElement && labelTitleElement) {
+        //   console.log({nodeTypeElement, labelTitleElement})
+        // }
+        const nodeTypeHeight = nodeTypeElement.offsetHeight;
+        const labelTitleHeight = labelTitleElement.offsetHeight;
+        // console.log({nodeTypeHeight, labelTitleHeight})
+        let buttonHeight = labelTitleHeight + nodeTypeHeight;
+
+        let element = null;
+        for (let i = buttonIndex; i >= 0; i--) {
+          // console.log({i, buttonHeight, additionalHeight})
+          element = document.getElementById('button_' + node.id + '_' + i);
+          // if (element) {
+          //   console.log({element});
+          // }
+          // const elementHeight = element.offsetHeight;
+          // console.log({elementHeight})
+          if(!element) { continue; }
+          // console.log({first: buttonHeight});
+          if(i === buttonIndex) {
+            buttonHeight += element.offsetHeight/1.75;
+          } else {
+            buttonHeight += element.offsetHeight;
+          }
+          // console.log({second: buttonHeight});
+        }
+
+        buttonHeight += additionalHeight;
+        // console.log({buttonIndex, buttonHeight, first: buttonHeight, second: labelHeight + 41 * (buttonIndex + 0.5 - node.buttons.length)})
+        return [x + labelWidth, y + buttonHeight];
+        // return [x + labelWidth, y + labelHeight + 41 * (buttonIndex + 0.5 - node.buttons.length)]
       }
-      if (type === 'left') {
-        return [x, y + labelHeight/2]
+      else if (type === 'left') {
+        return [x, y + labelHeight/2 + additionalHeight/2]
       }
       // NOT USED YET =============================
       // if (type === 'top') {
@@ -194,10 +280,10 @@ export default {
       // }
       // ==========================================
     },
-    linkingStart(index, buttonIndex) {
+    linkingStart(nodeId, buttonIndex) {
       this.action.linking = true;
       this.draggingLink = {
-        from: index,
+        from: nodeId,
         buttonIndex,
         mx: null,
         my: null,
@@ -208,17 +294,19 @@ export default {
       if (this.draggingLink && this.draggingLink.from !== index) {
         // check link existence
         const existed = this.scene.links.find((link) => {
-          return link.from === this.draggingLink.from && link.button === this.scene.nodes[this.scene.nodes.findIndex((item) => item.id === link.from)].buttons[this.draggingLink.buttonIndex].id;
+          return link.from === this.draggingLink.from && (link.button ? link.button === this.findNodeWithID(link.from).buttons[this.draggingLink.buttonIndex].id : true);
         })
         if (!existed) {
           let maxID = Math.max(0, ...this.scene.links.map((link) => {
             return link.id
           }))
+          const fromNode = this.findNodeWithID(this.draggingLink.from);
+          const outputButtonId = fromNode.buttons && fromNode.buttons.length ? fromNode.buttons[this.draggingLink.buttonIndex].id : undefined;
           const newLink = {
             id: maxID + 1,
             from: this.draggingLink.from,
             to: index,
-            button: this.scene.nodes[this.scene.nodes.findIndex((item) => item.id === this.draggingLink.from)].buttons[this.draggingLink.buttonIndex].id,
+            button: outputButtonId,
           };
           this.scene.links.push(newLink)
           this.$emit('linkAdded', newLink)
@@ -256,6 +344,7 @@ export default {
         [this.draggingLink.mx, this.draggingLink.my] = [this.mouse.x - toolbarWidth, this.mouse.y - titleHeight];
       }
       if (this.action.dragging) {
+        this.action.moving = true;
         this.mouse.x = e.pageX || e.clientX + document.documentElement.scrollLeft
         this.mouse.y = e.pageY || e.clientY + document.documentElement.scrollTop
         let diffX = this.mouse.x - this.mouse.lastX;
@@ -288,7 +377,7 @@ export default {
     handleUp(e) {
       const target = e.target || e.srcElement;
       // eslint-disable-next-line
-      console.log('ini dari SimpleFlowchart.vue fungsi handleUp', this.$el);
+      // console.log('ini dari SimpleFlowchart.vue fungsi handleUp', this.$el);
       if (this.$el.contains(target)) {
         if (typeof target.className !== 'string' || target.className.indexOf('node-input') < 0) {
           this.draggingLink = null;
@@ -301,6 +390,7 @@ export default {
       this.action.linking = false;
       this.action.dragging = null;
       this.action.scrolling = false;
+      this.action.moving = false;
     },
     handleDown(e) {
       const target = e.target || e.srcElement;
