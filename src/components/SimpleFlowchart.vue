@@ -149,6 +149,26 @@ export default {
         node.buttons = [newButton]
       }
     },
+  },
+  mounted() {
+    this.rootDivOffset.top = this.$el ? this.$el.offsetTop : 0;
+    this.rootDivOffset.left = this.$el ? this.$el.offsetLeft : 0;
+  },
+  methods: {
+    pinchin(e) {
+      // eslint-disable-next-line
+      console.log({e});
+    },
+    addingButtons(id, newButton) {
+      const node = this.findNodeWithID(id);
+
+      if (node.buttons) {
+        node.buttons.push(newButton);
+      } else {
+        this.scene.links = this.scene.links.filter((link) => link.from !== id);
+        node.buttons = [newButton]
+      }
+    },
     lines() {
       const lines = this.scene.links.map((link) => {
         const fromNode = this.findNodeWithID(link.from)
