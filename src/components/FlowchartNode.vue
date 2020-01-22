@@ -17,10 +17,10 @@
       <div class="node-label" :id="'label_' + id">
         <div ref="labelTitle" class="node-label-title" :id="'label-title_' + id" v-text="label" />
         <div v-if="buttons.length > 0" class="node-buttons" :id="'node-buttons_' + id">
-          <div v-for="(button, index) in buttons" :key="index" :id="'button_' + id + '_' + index" class="node-label-button">
+          <div v-for="(button, index) in styledButtons" :key="index" :id="'button_' + id + '_' + index" class="node-label-button">
             <span>{{button.text}}</span>
             <div class="node-port node-output" :id="'port_' + id + '_' + index" :class="{ 'node-port-start': isStart }" 
-              :style="buttonPortStyle(index)"
+              :style="button.style"
               @mousedown="outputMouseDown"
               @mousemove="outputMouseMoveFromButtonNode(index)"
               @mouseup="outputMouseUp"
@@ -57,6 +57,7 @@
 </template>
 
 <script>
+import * as _ from 'lodash';
 export default {
   name: 'FlowchartNode',
   props: {
@@ -147,6 +148,7 @@ export default {
   },
   data() {
     return {
+      styledButtons: [],
       show: {
         delete: false,
       },
@@ -154,6 +156,7 @@ export default {
     }
   },
   mounted() {
+    this.refreshButtons();
   },
   computed: {
     nodeStyle() {
@@ -165,6 +168,61 @@ export default {
     }
   },
   methods: {
+    refreshButtons() {
+      const buttons = this.buttons;
+
+      this.styledButtons = _.cloneDeep(buttons)
+
+      // calculate height of each element
+      const nodeTypeElement = this.$refs.nodeType;
+      if (!nodeTypeElement) { return; }
+
+      const labelTitleElement = this.$refs.labelTitle;
+      if (!labelTitleElement) { return; }
+
+      const nodeTypeHeight = nodeTypeElement.offsetHeight;
+      const labelTitleHeight = labelTitleElement.offsetHeight;
+
+      let buttonHeight = labelTitleHeight + nodeTypeHeight;
+
+      // detect start node, if yes, add extra height
+      let additionalHeight = 0;
+      if(this.isStart) {
+        const nodeStartTitleElement = document.getElementsByClassName('node-start')[0];
+        additionalHeight += nodeStartTitleElement ? nodeStartTitleElement.offsetHeight : 0;
+      }
+      buttonHeight += additionalHeight;
+
+
+      // calculate each port position
+      for (let i = 0; i < buttons.length; i++) {
+        const elements = this.$refs['button_' + this.id + '_' + i]
+
+        let element;
+        if(elements) {
+          element = elements[0]
+        }
+
+        const btnHeight = this.getButtonHeight(buttons[i].text)
+
+        if(i === 0) {
+          buttonHeight += btnHeight/2;
+        } else {
+          buttonHeight += (btnHeight/2) + (buttons[i-1].height/2)
+        }
+
+        // add button height as style to each button
+        buttons[i].style = {
+          top: buttonHeight + 'px',
+          right: '-8px',
+          marginTop: '0px'
+        }
+        buttons[i].height = btnHeight;
+
+        // add styled buttons as variable
+        this.styledButtons = _.cloneDeep(buttons);
+      }
+    },
     buttonPortStyle(index) {
       const nodeTypeElement = this.$refs.nodeType;
       if (!nodeTypeElement) { return; }
@@ -179,7 +237,13 @@ export default {
 
       let element = null;
       for (let i = index; i >= 0; i--) {
-        element = document.getElementById('button_' + this.id + '_' + i);
+        const elements = this.$refs['button_' + this.id + '_' + i]
+        if(elements) {
+          element = elements[0]
+        }
+        else {
+          continue;
+        }
         if(!element) { continue; }
         if(i === index) {
           buttonHeight += element.offsetHeight/1.75;
@@ -215,6 +279,20 @@ export default {
     handleMouseLeave() {
       this.show.delete = false;
     },
+    getButtonHeight(btnText) {
+        // create fake button
+        const fakeBtn = document.createElement('div');
+        fakeBtn.style = "padding: 10px; width: 224px; border-radius: 4px; line-height: 1.35;"
+        // fakeBtn.style.visibility = 'hidden';
+        const text = document.createElement('span');
+        text.style="font-size: 14px; text-align: center; font-weight: 600;";
+        text.innerHTML = btnText;
+        fakeBtn.appendChild(text);
+        document.getElementById('app').appendChild(fakeBtn);
+        const height = fakeBtn.offsetHeight;
+        document.getElementById('app').removeChild(fakeBtn);
+        return height;
+    },
     outputMouseDown(e) {
       this.linkingStart = true;
       e.preventDefault();
@@ -248,6 +326,9 @@ export default {
         id: maxButtonID + 1,
         text: 'new option',
       })
+
+      this.refreshButtons();
+      this.$emit('refresh');
       e.preventDefault();
     },
     showingDrawer(e) {

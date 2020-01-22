@@ -28,7 +28,8 @@
             :options="nodeOptions"
             @linkingStart="linkingStart(node.id, $event)"
             @linkingStop="linkingStop(node.id)"
-            @nodeSelected="nodeSelected(node.id, $event)">
+            @nodeSelected="nodeSelected(node.id, $event)"
+            @refresh="forceUpdate">
           </flowchart-node>
           <svg width="100%" :height="`${height}px`">
             <flowchart-link v-bind.sync="link"
@@ -426,6 +427,9 @@ export default {
     },
     onDragStart() {
       return false;
+    },
+    forceUpdate() {
+      this.$forceUpdate();
     },
     itemClick(e, action) {
       this.moving = true;
