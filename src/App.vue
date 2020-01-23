@@ -175,6 +175,9 @@ export default {
       return JSON.stringify(this.scene);
     }
   },
+  mounted() {
+    console.log(this.scene);
+  },
   methods: {
     canvasClick(e) {
       console.log('canvas Click, event:', e)

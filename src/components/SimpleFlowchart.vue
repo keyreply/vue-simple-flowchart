@@ -145,8 +145,8 @@ export default {
       if (node.buttons) {
         node.buttons.push(newButton);
       } else {
-        this.scene.links = this.scene.links.filter((link) => link.from !== id);
         node.buttons = [newButton]
+        this.scene.links = this.scene.links.filter((link) => link.from !== id);
       }
     },
     lines() {
