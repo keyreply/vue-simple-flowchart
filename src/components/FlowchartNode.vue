@@ -155,6 +155,9 @@ export default {
       linkingStart: false
     }
   },
+  created() {
+    this.refreshButtons();
+  },
   mounted() {
     this.refreshButtons();
   },
@@ -169,7 +172,7 @@ export default {
   },
   methods: {
     refreshButtons() {
-      const buttons = this.buttons;
+      const buttons = _.cloneDeep(this.buttons);
 
       this.styledButtons = _.cloneDeep(buttons)
 
