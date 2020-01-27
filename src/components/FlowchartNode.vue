@@ -161,6 +161,11 @@ export default {
   mounted() {
     this.refreshButtons();
   },
+  watch: {
+    ['buttons.length']: function(val) {
+      this.$emit('updateLines', { buttonHeight: this.getButtonHeight('new option'), buttonsLength: val });
+    }
+  },
   computed: {
     nodeStyle() {
       return {
@@ -199,13 +204,6 @@ export default {
 
       // calculate each port position
       for (let i = 0; i < buttons.length; i++) {
-        const elements = this.$refs['button_' + this.id + '_' + i]
-
-        let element;
-        if(elements) {
-          element = elements[0]
-        }
-
         const btnHeight = this.getButtonHeight(buttons[i].text)
 
         if(i === 0) {
