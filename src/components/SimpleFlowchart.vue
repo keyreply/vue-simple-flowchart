@@ -29,6 +29,7 @@
             @linkingStart="linkingStart(node.id, $event)"
             @linkingStop="linkingStop(node.id)"
             @nodeSelected="nodeSelected(node.id, $event)"
+            @updateLines="updateLines(node.id, $event)"
             @refresh="forceUpdate">
           </flowchart-node>
           <svg width="100%" :height="`${height}px`">
@@ -110,7 +111,13 @@ export default {
       moving: false,
       draggingNodeTop: 0,
       draggingNodeLeft: 0,
-      actionType: ''
+      actionType: '',
+      updateLineStatus: {
+        status: false,
+        toNodeId: null,
+        buttonHeight: null,
+        buttonsLength: null
+      }
     };
   },
   components: {
@@ -142,11 +149,19 @@ export default {
     addingButtons(id, newButton) {
       const node = this.findNodeWithID(id);
 
-      if (node.buttons) {
-        node.buttons.push(newButton);
-      } else {
-        node.buttons = [newButton]
+      if (!node.buttons) {
+        node.buttons = [];
         this.scene.links = this.scene.links.filter((link) => link.from !== id);
+      }
+      node.buttons.push(newButton);
+      this.$emit('buttonAdded', newButton);
+    },
+    updateLines(toNodeId, { buttonHeight, buttonsLength }) {
+      this.updateLineStatus = {
+        status: true,
+        toNodeId,
+        buttonHeight,
+        buttonsLength
       }
     },
     lines() {
@@ -161,6 +176,21 @@ export default {
         x = this.scene.centerX + (toNode.centeredX || toNode.x);
         y = this.scene.centerY + (toNode.centeredY || toNode.y);
         [ex, ey] = this.getPortPosition(toNode, 'left', x, y);
+
+        if (this.updateLineStatus.status && this.updateLineStatus.toNodeId === link.to) {
+          ey += this.updateLineStatus.buttonHeight / 2;
+
+          let element = document.getElementById('button_' + toNode.id + '_' + (this.updateLineStatus.buttonsLength - 1));
+          if (element) {
+            this.updateLineStatus = {
+              status: false,
+              toNodeId: null,
+              buttonHeight: null,
+              buttonsLength: null
+            }
+          }
+        }
+
         return { 
           start: [cx, cy], 
           end: [ex, ey],
