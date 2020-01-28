@@ -29,8 +29,7 @@
             @linkingStart="linkingStart(node.id, $event)"
             @linkingStop="linkingStop(node.id)"
             @nodeSelected="nodeSelected(node.id, $event)"
-            @updateLines="updateLines(node.id, $event)"
-            @refresh="forceUpdate">
+            @updateLines="updateLines(node.id, $event)">
           </flowchart-node>
           <svg width="100%" :height="`${height}px`">
             <flowchart-link v-bind.sync="link"
@@ -149,11 +148,16 @@ export default {
     addingButtons(id, newButton) {
       const node = this.findNodeWithID(id);
 
-      if (!node.buttons) {
+      if (!node.buttons || !node.buttons.length) {
         node.buttons = [];
-        this.scene.links = this.scene.links.filter((link) => link.from !== id);
+        if (newButton) {
+          this.scene.links = this.scene.links.filter((link) => link.from !== id);
+        }
       }
-      node.buttons.push(newButton);
+      if (newButton) {
+        // node.buttons.push(newButton);
+        node.buttons = [...node.buttons, newButton]
+      }
       this.$emit('buttonAdded', newButton);
     },
     updateLines(toNodeId, { buttonHeight, buttonsLength }) {
@@ -457,9 +461,6 @@ export default {
     },
     onDragStart() {
       return false;
-    },
-    forceUpdate() {
-      this.$forceUpdate();
     },
     itemClick(e, action) {
       this.moving = true;
