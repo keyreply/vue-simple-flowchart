@@ -162,8 +162,13 @@ export default {
     this.refreshButtons();
   },
   watch: {
-    ['buttons.length']: function(val) {
-      this.$emit('updateLines', { buttonHeight: this.getButtonHeight('new option'), buttonsLength: val });
+    buttons: {
+      handler:
+        function(val) {
+          this.refreshButtons();
+          this.$emit('updateLines', { buttonHeight: this.getButtonHeight('new option'), buttonsLength: val.length });
+        },
+      deep: true
     }
   },
   computed: {
@@ -329,7 +334,6 @@ export default {
       })
 
       this.refreshButtons();
-      this.$emit('refresh');
       e.preventDefault();
     },
     showingDrawer(e) {
