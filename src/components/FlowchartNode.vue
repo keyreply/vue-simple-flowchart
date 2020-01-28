@@ -13,7 +13,24 @@
       <div v-if="isStart" :id="'node-main_' + id" class="node-start">
         <span>{{startNodeTitle}}</span>
       </div>
-      <div ref="nodeType" :id="'node-type_' + id" v-text="type" class="node-type"></div>
+      <div ref="nodeType" :id="'node-type_' + id" class="node-type">
+        <div style="display: flex; align-items: center;">
+          <span style="flex-grow: 1">{{type}}</span>
+          <el-popover
+            placement="right-start"
+            width="200"
+            trigger="hover"
+            title="edit"
+          >
+            <div style="display: flex; flex-direction: column; align-items: center;">
+              <el-button type="text" plain @click="isPanelShow = !isPanelShow">label</el-button>
+              <el-button type="text" plain @click="isPanelShow = !isPanelShow">label</el-button>
+              <el-button type="text" plain @click="isPanelShow = !isPanelShow">label</el-button>
+            </div>
+            <el-button slot="reference" icon="el-icon-more" type="warning" size="mini" plain circle></el-button>
+          </el-popover>
+        </div>
+      </div>
       <div class="node-label" :id="'label_' + id">
         <div ref="labelTitle" class="node-label-title" :id="'label-title_' + id" v-text="label" />
         <div v-if="buttons.length > 0" class="node-buttons" :id="'node-buttons_' + id">
@@ -152,7 +169,12 @@ export default {
       show: {
         delete: false,
       },
-      linkingStart: false
+      linkingStart: false,
+      isEditing: {
+        tyoe: false,
+        label: false,
+        buttons: this.buttons.map(() => false)
+      }
     }
   },
   created() {

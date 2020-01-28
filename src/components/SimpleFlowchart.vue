@@ -141,9 +141,9 @@ export default {
     this.rootDivOffset.left = this.$el ? this.$el.offsetLeft : 0;
   },
   methods: {
+    // eslint-disable-next-line
     pinchin(e) {
-      // eslint-disable-next-line
-      console.log({e});
+      // console.log({e});
     },
     addingButtons(id, newButton) {
       const node = this.findNodeWithID(id);
