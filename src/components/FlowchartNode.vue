@@ -20,18 +20,41 @@
             placement="right-start"
             width="200"
             trigger="hover"
-            title="edit"
+            title="Edit Menu"
           >
-            <div style="display: flex; flex-direction: column; align-items: center;">
-              <el-button type="text" plain @click="isPanelShow = !isPanelShow">label</el-button>
-              <el-button type="text" plain @click="isPanelShow = !isPanelShow">label</el-button>
-              <el-button type="text" plain @click="isPanelShow = !isPanelShow">label</el-button>
+            <div style="display: flex; flex-direction: column;">
+              <el-popover
+                placement="right-start"
+                width="200"
+                trigger="hover"
+                title="Version"
+              >
+                <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                  <el-button type="text" plain>English</el-button>
+                </div>
+                <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                  <el-button type="text" plain>Bahasa Indonesia</el-button>
+                </div>
+                <div slot="reference" style="display: flex; flex-direction: column; flex-grow: 1;">
+                  <el-button type="text" plain>Version</el-button>
+                </div>
+              </el-popover>
+              <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                <el-button type="text" plain>Label</el-button>
+              </div>
+              <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                <el-button type="text" plain>Options</el-button>
+              </div>
+              <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                <el-button :id="'config-button_' + id" type="text" plain @click="showingDrawer">Showing Configurations</el-button>
+              </div>
             </div>
             <el-button slot="reference" icon="el-icon-more" type="warning" size="mini" plain circle></el-button>
           </el-popover>
         </div>
       </div>
       <div class="node-label" :id="'label_' + id">
+        <el-input />
         <div ref="labelTitle" class="node-label-title" :id="'label-title_' + id" v-text="label" />
         <div v-if="buttons.length > 0" class="node-buttons" :id="'node-buttons_' + id">
           <div v-for="(button, index) in styledButtons" :key="index" :id="'button_' + id + '_' + index" class="node-label-button">
@@ -60,14 +83,6 @@
       @click="addingButton"
     >
       <span>Add other options...</span>
-    </div>
-    <div
-      v-if="options.selected === id && !options.moving"
-      :id="'config-button_' + id"
-      class="node-config-button"
-      @click="showingDrawer"
-    >
-      <span>Show configurations...</span>
     </div>
     <div v-show="show.delete" class="node-delete">&times;</div>
   </div>
@@ -170,11 +185,12 @@ export default {
         delete: false,
       },
       linkingStart: false,
-      isEditing: {
+      editing: {
         tyoe: false,
         label: false,
         buttons: this.buttons.map(() => false)
-      }
+      },
+      isEditing: false
     }
   },
   created() {
@@ -299,7 +315,9 @@ export default {
       if (target.className.indexOf('node-input') < 0 && target.className.indexOf('node-output') < 0) {
         this.$emit('nodeSelected', e);
       }
-      e.preventDefault();
+      if (!this.isEditing) {
+        e.preventDefault();
+      }
     },
     handleMouseOver() {
       this.show.delete = true;
@@ -448,10 +466,10 @@ $portSize: 16;
       transform: translateY(-50%);
     }
     &.editing {
-      margin-top: -44px;
+      margin-top: -22px;
     }
     &.editing-start {
-      margin-top: -27px;
+      margin-top: -5px;
     }
   }
   .node-input {
