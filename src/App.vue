@@ -96,6 +96,7 @@ export default {
             y: 100,
             type: 'Script',
             label: 'Do you have any symptoms described below such as cough, fever, etc?',
+            isStart: false,
             buttons: [{
               id: 1,
               text: 'Yes'
@@ -113,6 +114,7 @@ export default {
             y: 100,
             type: 'Rule',
             label: 'test3',
+            isStart: false,
             buttons: []
           },
           {
@@ -121,6 +123,7 @@ export default {
             y: 400,
             type: 'Rule',
             label: 'test4',
+            isStart: false,
             buttons: []
           }
         ],
@@ -160,12 +163,12 @@ export default {
       newNodeType: 0,
       newNodeLabel: '',
       nodeCategory:[
-        'rule',
-        'action',
-        'script',
-        'decision',
-        'fork',
-        'join',
+        'Rule',
+        'Action',
+        'Script',
+        'Decision',
+        'Fork',
+        'Join',
       ],
     }
   },
@@ -191,6 +194,8 @@ export default {
         y: 50,
         type: this.nodeCategory[this.newNodeType],
         label: this.newNodeLabel ? this.newNodeLabel: `test${maxID + 1}`,
+        isStart: false,
+        buttons: []
       })
     },
     onCreateNode({x, y, nodeType, label}) {
@@ -200,10 +205,12 @@ export default {
       }))
       this.scene.nodes.push({
         id: maxID + 1,
-        x: x,
+        x,
         y,
         type: nodeType,
         label: label,
+        isStart: false,
+        buttons: []
       })
     },
     nodeClick(id) {

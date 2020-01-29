@@ -12,7 +12,7 @@
         </div>
       </div>
       <v-touch class="flowchart-container"
-        @tap="pinchin"
+        @tap="vtouch"
       >
         <div 
           @mousemove="handleMove" 
@@ -142,7 +142,7 @@ export default {
   },
   methods: {
     // eslint-disable-next-line
-    pinchin(e) {
+    vtouch(e) {
       // console.log({e});
     },
     addingButtons(id, newButton) {
@@ -169,7 +169,7 @@ export default {
       }
     },
     lines() {
-      const lines = this.scene.links.map((link) => {
+        const lines = this.scene.links.map((link) => {
         const fromNode = this.findNodeWithID(link.from)
         const toNode = this.findNodeWithID(link.to)
         let x, y, cy, cx, ex, ey;
@@ -182,10 +182,12 @@ export default {
         [ex, ey] = this.getPortPosition(toNode, 'left', x, y);
 
         if (this.updateLineStatus.status && this.updateLineStatus.toNodeId === link.to) {
-          ey += this.updateLineStatus.buttonHeight / 2;
+          if (this.updateLineStatus.buttonHeight) {
+            ey += this.updateLineStatus.buttonHeight / 2;
+          }
 
           let element = document.getElementById('button_' + toNode.id + '_' + (this.updateLineStatus.buttonsLength - 1));
-          if (element) {
+          if (element || !this.updateLineStatus.buttonHeight) {
             this.updateLineStatus = {
               status: false,
               toNodeId: null,
@@ -221,29 +223,17 @@ export default {
       })
     },
     getPortPosition(node, type, x, y, buttonId) {
-      // const nodeTypeElement = document.getElementById('node-type_' + id);
-      const labelElement = document.getElementById('node-main_' + node.id);
-      // const nodeButtonsElement = document.getElementById('node-buttons_' + id);
-      // let nodeTypeHeight = 0;
-          // nodeTypeWidth = 0;
-      // if (nodeTypeElement) {
-      //   nodeTypeHeight = nodeTypeElement.offsetHeight;
-        // nodeTypeWidth = nodeTypeElement.offsetWidth;
-      // }
       let labelHeight = 0,
           labelWidth = 0;
+      
+      let additionalHeight = 0;
+
+      const labelElement = document.getElementById('node-main_' + node.id);
       if (labelElement) {
         labelHeight = labelElement.offsetHeight;
         labelWidth = labelElement.offsetWidth;
       }
-      // let buttonsHeight = 0;
-          // buttonsWidth = 0;
-      // if (nodeButtonsElement) {
-      //   buttonsHeight = nodeButtonsElement.offsetHeight;
-        // buttonsWidth = nodeButtonsElement.offsetWidth;
-      // }
-      // check if start node, then add margin top by 50px (manually)
-      let additionalHeight = 0;
+
       if(node.isStart) {
         const nodeStartTitleElement = document.getElementsByClassName('node-start')[0];
         additionalHeight += nodeStartTitleElement ? nodeStartTitleElement.offsetHeight : 0;
@@ -276,32 +266,26 @@ export default {
         // }
         const nodeTypeHeight = nodeTypeElement.offsetHeight;
         const labelTitleHeight = labelTitleElement.offsetHeight;
-        // console.log({nodeTypeHeight, labelTitleHeight})
+        // if (node.id === 1) {
+        //   console.log({nodeTypeHeight, labelTitleHeight})
+        // }
         let buttonHeight = labelTitleHeight + nodeTypeHeight;
 
         let element = null;
         for (let i = buttonIndex; i >= 0; i--) {
           // console.log({i, buttonHeight, additionalHeight})
           element = document.getElementById('button_' + node.id + '_' + i);
-          // if (element) {
-          //   console.log({element});
-          // }
-          // const elementHeight = element.offsetHeight;
-          // console.log({elementHeight})
+
           if(!element) { continue; }
-          // console.log({first: buttonHeight});
           if(i === buttonIndex) {
             buttonHeight += element.offsetHeight/1.75;
           } else {
             buttonHeight += element.offsetHeight;
           }
-          // console.log({second: buttonHeight});
         }
 
         buttonHeight += additionalHeight;
-        // console.log({buttonIndex, buttonHeight, first: buttonHeight, second: labelHeight + 41 * (buttonIndex + 0.5 - node.buttons.length)})
         return [x + labelWidth, y + buttonHeight];
-        // return [x + labelWidth, y + labelHeight + 41 * (buttonIndex + 0.5 - node.buttons.length)]
       }
       else if (type === 'left') {
         return [x, y + labelHeight/2 + additionalHeight/2]
