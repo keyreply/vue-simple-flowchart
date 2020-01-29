@@ -16,7 +16,10 @@
       </div>
       <div ref="nodeType" :id="'node-type_' + id" class="node-type">
         <div style="display: flex; align-items: center;">
-          <span style="flex-grow: 1">{{type}}</span>
+          <el-select v-if="editing.type" :value="type" @input="$emit('update:type', nodeCategory[$event])" >
+            <el-option v-for="(item, index) in nodeCategory" :key="index" :value="index">{{item}}</el-option>
+          </el-select>
+          <span v-else style="flex-grow: 1">{{type}}</span>
           <el-popover
             placement="right-start"
             width="200"
@@ -40,18 +43,20 @@
                   <el-button type="text" plain>Version</el-button>
                 </div>
               </el-popover>
+              <el-divider content-position="left">Node Details</el-divider>
               <div v-if="isStart" style="display: flex; flex-direction: column; flex-grow: 1;">
-                <el-button :icon="editing.start ? 'el-icon-edit' : null" :type="editing.start ? 'primary' : 'text'" plain @click="editing.start = !editing.start">Start Title</el-button>
+                <el-button :icon="editing.start ? 'el-icon-edit' : null" :type="editing.start ? 'primary' : 'text'" plain @click="editing.start = !editing.start; delay()">Start Title</el-button>
               </div>
               <div style="display: flex; flex-direction: column; flex-grow: 1;">
-                <el-button :icon="editing.type ? 'el-icon-edit' : null" :type="editing.type ? 'primary' : 'text'" plain @click="editing.type = !editing.type">Type</el-button>
+                <el-button :icon="editing.type ? 'el-icon-edit' : null" :type="editing.type ? 'primary' : 'text'" plain @click="editing.type = !editing.type; delay()">Type</el-button>
               </div>
               <div style="display: flex; flex-direction: column; flex-grow: 1;">
-                <el-button :icon="editing.label ? 'el-icon-edit' : null" :type="editing.label ? 'primary' : 'text'" plain @click="editing.label = !editing.label">Label</el-button>
+                <el-button :icon="editing.label ? 'el-icon-edit' : null" :type="editing.label ? 'primary' : 'text'" plain @click="editing.label = !editing.label; delay()">Label</el-button>
               </div>
               <div style="display: flex; flex-direction: column; flex-grow: 1;">
-                <el-button :icon="editing.options.value ? 'el-icon-edit' : null" :type="editing.options.value ? 'primary' : 'text'" plain @click="editing.options.value = !editing.options.value">Options</el-button>
+                <el-button :icon="editing.options.value ? 'el-icon-edit' : null" :type="editing.options.value ? 'primary' : 'text'" plain @click="editing.options.value = !editing.options.value; delay()">Options</el-button>
               </div>
+              <el-divider content-position="left">Settings</el-divider>
               <div style="display: flex; flex-direction: column; flex-grow: 1;">
                 <el-button :id="'config-button_' + id" type="text" plain @click="showingDrawer">Showing Configurations</el-button>
               </div>
@@ -201,8 +206,17 @@ export default {
         options: {
           value: false,
           buttons: this.buttons.map(() => false)
-        }
-      }
+        },
+        cache: false
+      },
+      nodeCategory:[
+        'Rule',
+        'Action',
+        'Script',
+        'Decision',
+        'Fork',
+        'Join',
+      ]
     }
   },
   created() {
@@ -219,6 +233,14 @@ export default {
           this.$emit('updateLines', { buttonHeight: this.getButtonHeight('new option'), buttonsLength: val.length });
         },
       deep: true
+    },
+    editing: {
+      // eslint-disable-next-line
+      handler: function(val) {
+        this.$emit('updateLines', {});
+        this.refreshButtons();
+      },
+      deep: true
     }
   },
   computed: {
@@ -234,6 +256,11 @@ export default {
     }
   },
   methods: {
+    delay() {
+      setTimeout(() => {
+        this.editing.cache = !this.editing.cache;
+      }, 1)
+    },
     refreshButtons() {
       const buttons = _.cloneDeep(this.buttons);
 
