@@ -5,13 +5,14 @@
     @mouseleave="handleMouseLeave"
     v-bind:class="{selected: options.selected === id}"
   >
-    <div class="node-port node-input" :class="{ 'node-port-start': isStart, 'editing': options.selected === id && !options.moving, 'editing-start': isStart && options.selected === id && !options.dragging }"
+    <div class="node-port node-input" :class="{ 'node-port-start': isStart, 'editing': options.selected === id && !options.moving, 'editing-start': isStart && options.selected === id && !options.moving }"
       @mousedown="inputMouseDown"
       @mouseup="inputMouseUp"
     ></div>
     <div :id="'node-main_' + id" class="node-main">
       <div v-if="isStart" :id="'node-main_' + id" class="node-start">
-        <span>{{startNodeTitle}}</span>
+        <el-input v-if="editing.start" :value="startNodeTitle" @input="$emit('update:startNodeTitle', $event)" />
+        <span v-else>{{startNodeTitle}}</span>
       </div>
       <div ref="nodeType" :id="'node-type_' + id" class="node-type">
         <div style="display: flex; align-items: center;">
@@ -39,11 +40,17 @@
                   <el-button type="text" plain>Version</el-button>
                 </div>
               </el-popover>
-              <div style="display: flex; flex-direction: column; flex-grow: 1;">
-                <el-button type="text" plain>Label</el-button>
+              <div v-if="isStart" style="display: flex; flex-direction: column; flex-grow: 1;">
+                <el-button :icon="editing.start ? 'el-icon-edit' : null" :type="editing.start ? 'primary' : 'text'" plain @click="editing.start = !editing.start">Start Title</el-button>
               </div>
               <div style="display: flex; flex-direction: column; flex-grow: 1;">
-                <el-button type="text" plain>Options</el-button>
+                <el-button :icon="editing.type ? 'el-icon-edit' : null" :type="editing.type ? 'primary' : 'text'" plain @click="editing.type = !editing.type">Type</el-button>
+              </div>
+              <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                <el-button :icon="editing.label ? 'el-icon-edit' : null" :type="editing.label ? 'primary' : 'text'" plain @click="editing.label = !editing.label">Label</el-button>
+              </div>
+              <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                <el-button :icon="editing.options.value ? 'el-icon-edit' : null" :type="editing.options.value ? 'primary' : 'text'" plain @click="editing.options.value = !editing.options.value">Options</el-button>
               </div>
               <div style="display: flex; flex-direction: column; flex-grow: 1;">
                 <el-button :id="'config-button_' + id" type="text" plain @click="showingDrawer">Showing Configurations</el-button>
@@ -54,8 +61,10 @@
         </div>
       </div>
       <div class="node-label" :id="'label_' + id">
-        <el-input />
-        <div ref="labelTitle" class="node-label-title" :id="'label-title_' + id" v-text="label" />
+        <div ref="labelTitle" class="node-label-title" :id="'label-title_' + id">
+          <el-input v-if="editing.label" type="textarea" :rows="3" :value="label" @input="$emit('update:label', $event)" />
+          <span v-else>{{label}}</span>
+        </div>
         <div v-if="buttons.length > 0" class="node-buttons" :id="'node-buttons_' + id">
           <div v-for="(button, index) in styledButtons" :key="index" :id="'button_' + id + '_' + index" class="node-label-button">
             <span>{{button.text}}</span>
@@ -186,11 +195,14 @@ export default {
       },
       linkingStart: false,
       editing: {
-        tyoe: false,
+        start: false,
+        type: false,
         label: false,
-        buttons: this.buttons.map(() => false)
-      },
-      isEditing: false
+        options: {
+          value: false,
+          buttons: this.buttons.map(() => false)
+        }
+      }
     }
   },
   created() {
@@ -210,6 +222,9 @@ export default {
     }
   },
   computed: {
+    isEditing() {
+      return this.editing.start || this.editing.type || this.editing.label || this.editing.options.value;
+    },
     nodeStyle() {
       return {
         top: ((this.centeredY || this.y)  * this.options.scale) + 'px', // remove: this.options.offsetTop + 
