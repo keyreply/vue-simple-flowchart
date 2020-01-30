@@ -27,6 +27,10 @@
             title="Edit Menu"
           >
             <div style="display: flex; flex-direction: column;">
+              <div style="display: flex;">
+                <span style="flex-grow: 1;">Node Start</span>
+                <el-switch :value="isStart" @input="$emit('update:isStart', !isStart); delay()"/>
+              </div>
               <el-popover
                 placement="right-start"
                 width="200"
@@ -59,6 +63,9 @@
               <el-divider content-position="left">Settings</el-divider>
               <div style="display: flex; flex-direction: column; flex-grow: 1;">
                 <el-button :id="'config-button_' + id" type="text" plain @click="showingDrawer">Showing Configurations</el-button>
+              </div>
+              <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                <el-button icon="el-icon-delete" type="danger" @click="$emit('nodeDelete')">Delete this node</el-button>
               </div>
             </div>
             <el-button slot="reference" icon="el-icon-more" type="warning" size="mini" plain circle></el-button>
@@ -241,10 +248,13 @@ export default {
     editing: {
       // eslint-disable-next-line
       handler: function(val) {
-        this.$emit('updateLines', {});
-        this.refreshButtons();
+        this.refreshAll();
       },
       deep: true
+    },
+    // eslint-disable-next-line
+    isStart: function(val) {
+      this.refreshAll();
     }
   },
   computed: {
@@ -260,6 +270,10 @@ export default {
     }
   },
   methods: {
+    refreshAll() {
+      this.$emit('updateLines', {});
+      this.refreshButtons();
+    },
     delay() {
       setTimeout(() => {
         this.editing.cache = !this.editing.cache;
