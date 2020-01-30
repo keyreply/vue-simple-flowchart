@@ -17,7 +17,8 @@
         <div 
           @mousemove="handleMove" 
           @mouseup="handleUp"
-          @mousedown="handleDown">
+          @mousedown="handleDown"
+        >
           <flowchart-node
             v-bind.sync="node"
             :showDrawer.sync="showDrawer"
@@ -88,8 +89,8 @@ export default {
           left: false,
           right: false,
         }
-      },
-    },
+      }
+    }
   },
   data() {
     return {
@@ -190,7 +191,7 @@ export default {
       this.$emit('buttonDeleted', { nodeId, deletedButton });
     },
     lines() {
-        const lines = this.scene.links.map((link) => {
+      const lines = this.scene.links.map((link) => {
         const fromNode = this.findNodeWithID(link.from)
         const toNode = this.findNodeWithID(link.to)
         let x, y, cy, cx, ex, ey;

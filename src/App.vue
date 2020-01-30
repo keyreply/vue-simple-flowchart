@@ -28,7 +28,8 @@
       @buttonDeleted="buttonDeleted"
       @canvasClick="canvasClick"
       @onDropNewNode="onCreateNode"
-      :height="800"/>
+      :height="800"
+    />
     
     <el-drawer
       title="I am LEFT"
@@ -171,7 +172,7 @@ export default {
         'Decision',
         'Fork',
         'Join',
-      ],
+      ]
     }
   },
   computed: {
