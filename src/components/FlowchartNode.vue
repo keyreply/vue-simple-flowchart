@@ -150,11 +150,11 @@ export default {
       }
     },
     id: {
-      type: Number,
-      default: 1000,
-      validator(val) {
-        return typeof val === 'number'
-      }
+      // type: Number,
+      default: 'newNodeId',
+      // validator(val) {
+      //   return typeof val === 'number'
+      // }
     },
     x: {
       type: Number,
