@@ -24,6 +24,8 @@
       @linkBreak="linkBreak"
       @linkAdded="linkAdded"
       @buttonAdded="buttonAdded"
+      @buttonUpdated="buttonUpdated"
+      @buttonDeleted="buttonDeleted"
       @canvasClick="canvasClick"
       @onDropNewNode="onCreateNode"
       :height="800"/>
@@ -225,8 +227,14 @@ export default {
     linkAdded(link) {
       console.log('new link added:', link);
     },
-    buttonAdded(button) {
-      console.log('new button added:', button);
+    buttonAdded(obj) {
+      console.log('new button added:', obj);
+    },
+    buttonUpdated(obj) {
+      console.log('button updated:', obj);
+    },
+    buttonDeleted(obj) {
+      console.log('button deleted:', obj);
     },
     closingDrawer(done) {
       done();

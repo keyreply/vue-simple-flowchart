@@ -31,6 +31,7 @@
             @nodeSelected="nodeSelected(node.id, $event)"
             @updateLines="updateLines(node.id, $event)"
             @updateButtonText="updateButtonText(node.id, $event)"
+            @deleteButtonNode="deleteButtonNode(node.id, $event)"
             @nodeDelete="nodeDelete(node.id)"
             :foundIsStart="foundIsStart">
           </flowchart-node>
@@ -151,20 +152,20 @@ export default {
     vtouch(e) {
       // console.log({e});
     },
-    addingButtons(id, newButton) {
-      const node = this.findNodeWithID(id);
+    addingButtons(nodeId, newButton) {
+      const node = this.findNodeWithID(nodeId);
 
       if (!node.buttons || !node.buttons.length) {
         node.buttons = [];
         if (newButton) {
-          this.scene.links = this.scene.links.filter((link) => link.from !== id);
+          this.scene.links = this.scene.links.filter((link) => link.from !== nodeId);
         }
       }
       if (newButton) {
         // node.buttons.push(newButton);
         node.buttons = [...node.buttons, newButton]
       }
-      this.$emit('buttonAdded', newButton);
+      this.$emit('buttonAdded', { nodeId, newButton });
     },
     updateLines(toNodeId, { buttonHeight, buttonsLength }) {
       this.updateLineStatus = {
@@ -175,7 +176,18 @@ export default {
       }
     },
     updateButtonText(nodeId, { buttonId, text }) {
-      this.scene.nodes.find((node) => node.id === nodeId).buttons.find((button) => button.id === buttonId).text = text; 
+      const updatedButton = this.findNodeWithID(nodeId).buttons.find((button) => button.id === buttonId);
+
+      updatedButton.text = text;
+      this.$emit('buttonUpdated', { nodeId, updatedButton });
+    },
+    deleteButtonNode(nodeId, buttonId) {
+      const node = this.findNodeWithID(nodeId);
+      const deletedButton = node.buttons.find((button) => button.id === buttonId);
+
+      node.buttons = node.buttons.filter((button) => button.id !== buttonId);
+      this.scene.links = this.scene.links.filter((link) => link.from !== nodeId || link.button !== buttonId);
+      this.$emit('buttonDeleted', { nodeId, deletedButton });
     },
     lines() {
         const lines = this.scene.links.map((link) => {
