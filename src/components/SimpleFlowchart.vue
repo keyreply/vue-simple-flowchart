@@ -195,6 +195,7 @@ export default {
         const fromNode = this.findNodeWithID(link.from)
         const toNode = this.findNodeWithID(link.to)
         let x, y, cy, cx, ex, ey;
+        // console.log({ fromNode, toNode });
 
         x = this.scene.centerX + (fromNode.centeredX || fromNode.x);
         y = this.scene.centerY + (fromNode.centeredY || fromNode.y);
