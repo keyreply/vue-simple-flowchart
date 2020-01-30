@@ -29,7 +29,8 @@
             @linkingStart="linkingStart(node.id, $event)"
             @linkingStop="linkingStop(node.id)"
             @nodeSelected="nodeSelected(node.id, $event)"
-            @updateLines="updateLines(node.id, $event)">
+            @updateLines="updateLines(node.id, $event)"
+            @updateButtonText="updateButtonText(node.id, $event)">
           </flowchart-node>
           <svg width="100%" :height="`${height}px`">
             <flowchart-link v-bind.sync="link"
@@ -167,6 +168,9 @@ export default {
         buttonHeight,
         buttonsLength
       }
+    },
+    updateButtonText(nodeId, { buttonId, text }) {
+      this.scene.nodes.find((node) => node.id === nodeId).buttons.find((button) => button.id === buttonId).text = text; 
     },
     lines() {
         const lines = this.scene.links.map((link) => {

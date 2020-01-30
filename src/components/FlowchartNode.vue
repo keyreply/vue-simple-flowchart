@@ -53,7 +53,7 @@
               <div style="display: flex; flex-direction: column; flex-grow: 1;">
                 <el-button :icon="editing.label ? 'el-icon-edit' : null" :type="editing.label ? 'primary' : 'text'" plain @click="editing.label = !editing.label; delay()">Label</el-button>
               </div>
-              <div style="display: flex; flex-direction: column; flex-grow: 1;">
+              <div v-if="buttons.length" style="display: flex; flex-direction: column; flex-grow: 1;">
                 <el-button :icon="editing.options.value ? 'el-icon-edit' : null" :type="editing.options.value ? 'primary' : 'text'" plain @click="editing.options.value = !editing.options.value; delay()">Options</el-button>
               </div>
               <el-divider content-position="left">Settings</el-divider>
@@ -72,7 +72,8 @@
         </div>
         <div v-if="buttons.length > 0" class="node-buttons" :id="'node-buttons_' + id">
           <div v-for="(button, index) in styledButtons" :key="index" :id="'button_' + id + '_' + index" class="node-label-button">
-            <span>{{button.text}}</span>
+            <el-input v-if="editing.options.value" type="textarea" :rows="temp.buttonRows" :value="button.text" @input="$emit('updateButtonText', { text: $event, buttonId: button.id })" />
+            <span v-else>{{button.text}}</span>
             <div class="node-port node-output" :id="'port_' + id + '_' + index" :class="{ 'node-port-start': isStart }" 
               :style="button.style"
               @mousedown="outputMouseDown"
@@ -194,6 +195,9 @@ export default {
   },
   data() {
     return {
+      temp: {
+        buttonRows: 2
+      },
       styledButtons: [],
       show: {
         delete: false,
@@ -204,8 +208,8 @@ export default {
         type: false,
         label: false,
         options: {
-          value: false,
-          buttons: this.buttons.map(() => false)
+          value: false
+          // buttons: this.buttons.map(() => false)
         },
         cache: false
       },
@@ -372,10 +376,18 @@ export default {
         const fakeBtn = document.createElement('div');
         fakeBtn.style = "padding: 10px; width: 224px; border-radius: 4px; line-height: 1.35;"
         // fakeBtn.style.visibility = 'hidden';
-        const text = document.createElement('span');
-        text.style="font-size: 14px; text-align: center; font-weight: 600;";
-        text.innerHTML = btnText;
-        fakeBtn.appendChild(text);
+        if (this.editing.options.value) {
+          const textarea = document.createElement('textarea');
+          textarea.className = "el-textarea__inner";
+          textarea.style = "min-height: 33px";
+          textarea.rows = this.temp.buttonRows;
+          fakeBtn.appendChild(textarea);
+        } else {
+          const text = document.createElement('span');
+          text.style="font-size: 14px; text-align: center; font-weight: 600;";
+          text.innerHTML = btnText;
+          fakeBtn.appendChild(text);
+        }
         document.getElementById('app').appendChild(fakeBtn);
         const height = fakeBtn.offsetHeight;
         document.getElementById('app').removeChild(fakeBtn);
