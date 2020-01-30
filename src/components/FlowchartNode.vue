@@ -29,7 +29,7 @@
             <div style="display: flex; flex-direction: column;">
               <div style="display: flex;">
                 <span style="flex-grow: 1;">Node Start</span>
-                <el-switch :value="isStart" @input="$emit('update:isStart', !isStart); delay()"/>
+                <el-switch :disabled="foundIsStart && !isStart" :value="isStart" @input="$emit('update:isStart', !isStart); delay()"/>
               </div>
               <el-popover
                 placement="right-start"
@@ -115,6 +115,10 @@ import * as _ from 'lodash';
 export default {
   name: 'FlowchartNode',
   props: {
+    foundIsStart: {
+      type: Boolean,
+      default: false
+    },
     showDrawer: {
       type: Object,
       default() {

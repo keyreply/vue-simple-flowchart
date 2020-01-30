@@ -31,7 +31,8 @@
             @nodeSelected="nodeSelected(node.id, $event)"
             @updateLines="updateLines(node.id, $event)"
             @updateButtonText="updateButtonText(node.id, $event)"
-            @nodeDelete="nodeDelete(node.id)">
+            @nodeDelete="nodeDelete(node.id)"
+            :foundIsStart="foundIsStart">
           </flowchart-node>
           <svg width="100%" :height="`${height}px`">
             <flowchart-link v-bind.sync="link"
@@ -137,6 +138,9 @@ export default {
         moving: this.action.moving
       }
     },
+    foundIsStart() {
+      return Boolean(this.scene.nodes.find((node) => node.isStart));
+    }
   },
   mounted() {
     this.rootDivOffset.top = this.$el ? this.$el.offsetTop : 0;
