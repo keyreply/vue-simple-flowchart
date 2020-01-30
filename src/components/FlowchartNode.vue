@@ -78,9 +78,12 @@
           <span v-else>{{label}}</span>
         </div>
         <div v-if="buttons.length > 0" class="node-buttons" :id="'node-buttons_' + id">
-          <div v-for="(button, index) in styledButtons" :key="index" :id="'button_' + id + '_' + index" class="node-label-button">
-            <el-input v-if="editing.options.value" type="textarea" :rows="temp.buttonRows" :value="button.text" @input="$emit('updateButtonText', { text: $event, buttonId: button.id })" />
-            <span v-else>{{button.text}}</span>
+          <div @mouseover="button.show = true" @mouseleave="button.show = false" v-for="(button, index) in styledButtons" :key="index" :id="'button_' + id + '_' + index" class="node-label-button">
+            <div style="position: relative">
+              <el-input v-if="editing.options.value" type="textarea" :rows="temp.buttonRows" :value="button.text" @input="$emit('updateButtonText', { text: $event, buttonId: button.id })" />
+              <span v-else>{{button.text}}</span>
+              <div style="top: -20px; right: -20px" v-show="editing.options.value && button.show" class="button-delete" @click="$emit('deleteButtonNode', button.id)">&times;</div>
+            </div>
             <div class="node-port node-output" :id="'port_' + id + '_' + index" :class="{ 'node-port-start': isStart }" 
               :style="button.style"
               @mousedown="outputMouseDown"
@@ -326,7 +329,7 @@ export default {
           marginTop: '0px'
         }
         buttons[i].height = btnHeight;
-
+        buttons[i].show = false;
         // add styled buttons as variable
         this.styledButtons = _.cloneDeep(buttons);
       }
@@ -550,7 +553,7 @@ $portSize: 16;
   .node-output {
     right: #{-2+$portSize/-3}px;
   }
-  .node-delete {
+  .node-delete, .button-delete{
     position: absolute;
     right: -6px;
     top: -6px;
