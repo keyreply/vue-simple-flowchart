@@ -191,12 +191,26 @@ export default {
       this.$emit('buttonDeleted', { nodeId, deletedButton });
     },
     lines() {
-      const lines = this.scene.links.map((link) => {
+      let lines = this.scene.links.map((link) => {
         const fromNode = this.findNodeWithID(link.from)
         const toNode = this.findNodeWithID(link.to)
         let x, y, cy, cx, ex, ey;
-        // console.log({ fromNode, toNode });
 
+        // console.log({ fromNode, toNode });
+        if (!fromNode || !toNode) {
+          const error = {
+            message: 'one of nodes not existed!',
+            detail: {
+              link,
+              fromNode,
+              toNode
+            }
+          }
+
+          this.$emit('addErrors', error);
+
+          return null;
+        }
         x = this.scene.centerX + (fromNode.centeredX || fromNode.x);
         y = this.scene.centerY + (fromNode.centeredY || fromNode.y);
         [cx, cy] = this.getPortPosition(fromNode, 'right', x, y, link.button);
@@ -226,6 +240,9 @@ export default {
           id: link.id,
         };
       })
+      
+      lines = lines.filter((line) => line);
+
       if (this.draggingLink) {
         let x, y, cy, cx;
         const fromNode = this.findNodeWithID(this.draggingLink.from);
