@@ -168,13 +168,15 @@ export default {
       }
       this.$emit('buttonAdded', { nodeId, newButton });
     },
-    updateLines(toNodeId, { buttonHeight, buttonsLength }) {
-      this.updateLineStatus = {
-        status: true,
-        toNodeId,
-        buttonHeight,
-        buttonsLength
-      }
+    updateLines(toNodeId, { deleting, buttonHeight, buttonsLength }) {
+      // if (!deleting) {
+        this.updateLineStatus = {
+          status: true,
+          toNodeId,
+          buttonHeight,
+          buttonsLength
+        }
+      // }
     },
     updateButtonText(nodeId, { buttonId, text }) {
       const updatedButton = this.findNodeWithID(nodeId).buttons.find((button) => button.id === buttonId);
@@ -210,7 +212,7 @@ export default {
           }
 
           let element = document.getElementById('button_' + toNode.id + '_' + (this.updateLineStatus.buttonsLength - 1));
-          if (element || !this.updateLineStatus.buttonHeight) {
+          if ((this.updateLineStatus.buttonHeight >= 0 && element) || (this.updateLineStatus.buttonHeight < 0 && !element)) {
             this.updateLineStatus = {
               status: false,
               toNodeId: null,
