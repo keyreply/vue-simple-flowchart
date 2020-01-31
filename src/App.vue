@@ -24,10 +24,21 @@
         <el-input style="width: 300px" type="text" v-model="newNodeLabel" placeholder="Input node label" />
         <el-button type="primary" @click="addNode">ADD</el-button>
       </div>
-      <el-button type="primary" @click="isPanelShow = !isPanelShow">{{!isPanelShow ? 'Show Panel' : 'Hide Panel'}}</el-button>
-      <el-button v-if="isPanelShow" @click="isRawScene = !isRawScene">{{!isRawScene ? 'Show Raw' : 'Show Pretty'}}</el-button>
+      <div style="margin: 10px">
+        <el-button type="primary" @click="isPanelShow = !isPanelShow">{{!isPanelShow ? 'Show Panel' : 'Hide Panel'}}</el-button>
+        <el-button v-if="isPanelShow" @click="isRawScene = !isRawScene">{{!isRawScene ? 'Show Raw' : 'Show Pretty'}}</el-button>
+      </div>
+      <div style="margin: 10px">
+        <el-button type="danger" @click="isErrorShow = !isErrorShow">{{!isErrorShow ? 'Show Error Logs' : 'Hide Error Logs'}}</el-button>
+        <el-button v-if="isErrorShow" @click="isRawError = !isRawError">{{!isRawError ? 'Show Raw' : 'Show Pretty'}}</el-button>
+      </div>
+      <h3 v-if="isPanelShow">Scene</h3>
       <div v-if="isPanelShow" class="panel-area">
         <el-card v-html="isRawScene ? rawScene : prettyScene" class="extraction-panel" />
+      </div>
+      <h3 v-if="isErrorShow">Error Logs</h3>
+      <div v-if="isErrorShow" class="panel-area">
+        <el-card v-html="isRawError ? rawErrors : prettyErrors" class="extraction-panel" />
       </div>
     </div>
     
@@ -44,6 +55,7 @@
       @canvasClick="canvasClick"
       @onDropNewNode="onCreateNode"
       @notification="notificationUp($event.title, $event.type, $event.auto)"
+      @addErrors="addErrors($event)"
       :height="800"
     />
     
@@ -80,8 +92,11 @@ export default {
   data() {
     return {
       notifications: [],
+      errors: [],
       isRawScene: false,
       isPanelShow: false,
+      isRawError: false,
+      isErrorShow: false,
       showDrawer: {
         left: false,
         right: false,
@@ -198,6 +213,12 @@ export default {
     },
     rawScene() {
       return JSON.stringify(this.scene);
+    },
+    prettyErrors() {
+      return JSON.stringify(this.errors, null, '\t').replace(/\n/gi, '<br />').replace(/\t/gi, '&nbsp;&nbsp;')
+    },
+    rawErrors() {
+      return JSON.stringify(this.errors);
     }
   },
   mounted() {
@@ -1381,16 +1402,33 @@ export default {
           }
         ]
     }
-    this.notificationUp('Welcome User', 'success', true);
-    setTimeout(() => {
-      this.notificationUp('Nice to meet you', 'warning', true);
-    }, 1000)
-    // this.scene.nodes = temp.nodes;
+    // this.notificationUp('Welcome User', 'success', true);
+    // setTimeout(() => {
+    //   this.notificationUp('Nice to meet you', 'warning', true);
+    // }, 1000)
+    this.scene.nodes = temp.nodes;
+    this.scene.links = temp.links;
     // this.scene.links = temp.links.filter((link) => Boolean(temp.nodes.find((node) => node.id === link.to)));
     // console.log('FILTER LINKS', temp.links.filter((link) => Boolean(temp.nodes.find((node) => node.id === link.to))).length);
     // console.log({temp, scene: this.scene})
   },
   methods: {
+    addErrors({ message, detail }) {
+      if (!this.errors.find((error) => error.detail.link.id === detail.link.id)) {
+          this.errors.push({
+            message,
+            detail
+          })
+          this.notificationUp(message + ' check log windows!', 'error', true);
+      }
+      if (!detail.link) {
+        this.notificationUp(message + ' check log windows!', 'error', true);
+        this.errors.push({
+          message,
+          detail
+        })
+      }
+    },
     notificationUp(title, type, auto) {
       const id = Math.max(0, ...this.notifications.map((item) => item.id)) + 1;
       const notification = {

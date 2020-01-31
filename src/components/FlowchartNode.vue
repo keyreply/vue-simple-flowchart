@@ -256,7 +256,7 @@ export default {
       handler:
         function(val, old) {
           this.refreshButtons();
-          if (val.length <= old.length) {
+          if (val.length < old.length) {
             let tmp = [...old];
             let deleted = null;
 
@@ -271,7 +271,7 @@ export default {
             })
 
             this.$emit('updateLines', { buttonHeight: -this.getButtonHeight(deleted.text), buttonsLength: old.length })
-          } else {
+          } else if (val.length > old.length) {
             this.$emit('updateLines', { buttonHeight: this.getButtonHeight('new option'), buttonsLength: val.length }); 
           }
         },
