@@ -155,8 +155,21 @@ export default {
       linkingStart: false
     }
   },
+  created() {
+    this.refreshButtons();
+  },
   mounted() {
     this.refreshButtons();
+  },
+  watch: {
+    buttons: {
+      handler:
+        function(val) {
+          this.refreshButtons();
+          this.$emit('updateLines', { buttonHeight: this.getButtonHeight('new option'), buttonsLength: val.length });
+        },
+      deep: true
+    }
   },
   computed: {
     nodeStyle() {
@@ -169,7 +182,7 @@ export default {
   },
   methods: {
     refreshButtons() {
-      const buttons = this.buttons;
+      const buttons = _.cloneDeep(this.buttons);
 
       this.styledButtons = _.cloneDeep(buttons)
 
@@ -196,13 +209,6 @@ export default {
 
       // calculate each port position
       for (let i = 0; i < buttons.length; i++) {
-        const elements = this.$refs['button_' + this.id + '_' + i]
-
-        let element;
-        if(elements) {
-          element = elements[0]
-        }
-
         const btnHeight = this.getButtonHeight(buttons[i].text)
 
         if(i === 0) {
@@ -328,7 +334,6 @@ export default {
       })
 
       this.refreshButtons();
-      this.$emit('refresh');
       e.preventDefault();
     },
     showingDrawer(e) {

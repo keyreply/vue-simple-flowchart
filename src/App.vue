@@ -113,6 +113,7 @@ export default {
             y: 100,
             type: 'Rule',
             label: 'test3',
+            buttons: []
           },
           {
             id: 4,
@@ -120,6 +121,7 @@ export default {
             y: 400,
             type: 'Rule',
             label: 'test4',
+            buttons: []
           }
         ],
         links: [
