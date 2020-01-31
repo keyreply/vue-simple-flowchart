@@ -36,7 +36,7 @@
       <div v-if="isPanelShow" class="panel-area">
         <el-card v-html="isRawScene ? rawScene : prettyScene" class="extraction-panel" />
       </div>
-      <h3 v-if="isErrorShow">Error Logs</h3>
+      <h3 v-if="isErrorShow">Error Logs ({{errors.length}})</h3>
       <div v-if="isErrorShow" class="panel-area">
         <el-card v-html="isRawError ? rawErrors : prettyErrors" class="extraction-panel" />
       </div>
@@ -1402,10 +1402,10 @@ export default {
           }
         ]
     }
-    // this.notificationUp('Welcome User', 'success', true);
-    // setTimeout(() => {
-    //   this.notificationUp('Nice to meet you', 'warning', true);
-    // }, 1000)
+    this.notificationUp('Welcome User', 'success', true);
+    setTimeout(() => {
+      this.notificationUp('Nice to meet you', 'warning', true);
+    }, 1000)
     this.scene.nodes = temp.nodes;
     this.scene.links = temp.links;
     // this.scene.links = temp.links.filter((link) => Boolean(temp.nodes.find((node) => node.id === link.to)));

@@ -195,6 +195,7 @@ export default {
         const fromNode = this.findNodeWithID(link.from)
         const toNode = this.findNodeWithID(link.to)
         let x, y, cy, cx, ex, ey;
+        let posResult;
 
         // console.log({ fromNode, toNode });
         if (!fromNode || !toNode) {
@@ -211,12 +212,30 @@ export default {
 
           return null;
         }
+
         x = this.scene.centerX + (fromNode.centeredX || fromNode.x);
         y = this.scene.centerY + (fromNode.centeredY || fromNode.y);
-        [cx, cy] = this.getPortPosition(fromNode, 'right', x, y, link.button);
+        posResult = this.getPortPosition(fromNode, 'right', x, y, link.button);
+        if (!posResult) {
+          const error = {
+            message: 'not able positioning node buttons, button not exist!',
+            detail: {
+              link,
+              fromNode,
+              buttons: fromNode.buttons
+            }
+          }
+
+          this.$emit('addErrors', error);
+
+          return null;
+        } 
+        [cx, cy] = posResult;
+
         x = this.scene.centerX + (toNode.centeredX || toNode.x);
         y = this.scene.centerY + (toNode.centeredY || toNode.y);
-        [ex, ey] = this.getPortPosition(toNode, 'left', x, y);
+        posResult = this.getPortPosition(toNode, 'left', x, y);
+        [ex, ey] = posResult;
 
         if (this.updateLineStatus.status && this.updateLineStatus.toNodeId === link.to) {
           if (this.updateLineStatus.buttonHeight) {
@@ -284,8 +303,11 @@ export default {
 
         if (buttonId && buttonId !== -1) {
           buttonIndex = node.buttons.findIndex((button) => button.id === buttonId);
+          if (buttonIndex < 0) {
+            return null;
+          }
         } else {
-            if (buttonId === -1 && this.draggingLink && this.draggingLink.buttonIndex !== undefined) { // this line is important! -1 means the condition is in dragginglink
+          if (buttonId === -1 && this.draggingLink && this.draggingLink.buttonIndex !== undefined) { // this line is important! -1 means the condition is in dragginglink
             buttonIndex = this.draggingLink.buttonIndex;
             // console.log({selected: this.draggingLink})
             // console.log({node, buttons: node.buttons})
