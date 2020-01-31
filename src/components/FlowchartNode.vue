@@ -254,9 +254,26 @@ export default {
   watch: {
     buttons: {
       handler:
-        function(val) {
+        function(val, old) {
           this.refreshButtons();
-          this.$emit('updateLines', { buttonHeight: this.getButtonHeight('new option'), buttonsLength: val.length });
+          if (val.length <= old.length) {
+            let tmp = [...old];
+            let deleted = null;
+
+            old.forEach((item) => {
+              const found = val.find((subitem) => subitem.id === item.id);
+              
+              if (found) {
+                tmp = tmp.filter((x) => x.id !== found.id);
+              } else {
+                deleted = item;
+              }
+            })
+
+            this.$emit('updateLines', { buttonHeight: -this.getButtonHeight(deleted.text), buttonsLength: old.length })
+          } else {
+            this.$emit('updateLines', { buttonHeight: this.getButtonHeight('new option'), buttonsLength: val.length }); 
+          }
         },
       deep: true
     },

@@ -1,6 +1,21 @@
 <template>
   <div id="app">
     <div id="title">
+      <div id="notification" style="z-index: 10">
+        <el-alert
+          style="margin-bottom: 10px;"
+          center
+          show-icon
+          v-for="(notification, index) in notifications"
+          v-show="notification.status"
+          :key="index"
+          :title="notification.title"
+          :type="notification.type"
+          :closable="!notification.auto"
+          @close="clearNotification(notification.id)"
+        >
+        </el-alert>
+      </div>
       <h1>KeyReply Flowchart Editor Lab</h1>
       <div class="tool-wrapper">
         <el-select v-model="newNodeType">
@@ -63,6 +78,7 @@ export default {
   },
   data() {
     return {
+      notifications: [],
       isRawScene: false,
       isPanelShow: false,
       showDrawer: {
@@ -1364,13 +1380,53 @@ export default {
           }
         ]
     }
-
-    this.scene.nodes = temp.nodes;
-    this.scene.links = temp.links.filter((link) => Boolean(temp.nodes.find((node) => node.id === link.to)));
+    // this.notificationUp('Welcome User', 'success');
+    // setTimeout(() => {
+    //   this.notificationUp('Nice to meet you', 'warning');
+    // }, 1000)
+    // this.scene.nodes = temp.nodes;
+    // this.scene.links = temp.links.filter((link) => Boolean(temp.nodes.find((node) => node.id === link.to)));
     // console.log('FILTER LINKS', temp.links.filter((link) => Boolean(temp.nodes.find((node) => node.id === link.to))).length);
     // console.log({temp, scene: this.scene})
   },
+  watch: {
+    notifications: {
+      handler: 
+        function() {
+          this.notifications = this.notifications.filter((item) => item.status);
+        },
+      deep: true
+    }
+  },
   methods: {
+    notificationUp(title, type, auto) {
+      const id = Math.max(0, ...this.notifications.map((item) => item.id)) + 1;
+      const notification = {
+        id,
+        status: true,
+        title,
+        type,
+        auto
+      }
+      
+      this.notifications.unshift(notification);
+
+      if (this.notifications[0].auto) {
+        this.notificationDown(id);
+      }
+    },
+    notificationDown(id) {
+      setTimeout(() => {
+        this.clearNotification(id);
+      }, 3000)
+    },
+    clearNotification(id) {
+      console.log('TRIGGERED', id);
+      const notification = this.notifications.find((item) => item.id === id);
+      
+      notification.status = false;
+      this.notifications = this.notifications.filter((item) => item.status);
+    },
     canvasClick(e) {
       console.log('canvas Click, event:', e)
     },
