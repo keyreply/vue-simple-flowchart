@@ -168,15 +168,13 @@ export default {
       }
       this.$emit('buttonAdded', { nodeId, newButton });
     },
-    updateLines(toNodeId, { deleting, buttonHeight, buttonsLength }) {
-      // if (!deleting) {
-        this.updateLineStatus = {
-          status: true,
-          toNodeId,
-          buttonHeight,
-          buttonsLength
-        }
-      // }
+    updateLines(toNodeId, { buttonHeight, buttonsLength }) {
+      this.updateLineStatus = {
+        status: true,
+        toNodeId,
+        buttonHeight,
+        buttonsLength
+      }
     },
     updateButtonText(nodeId, { buttonId, text }) {
       const updatedButton = this.findNodeWithID(nodeId).buttons.find((button) => button.id === buttonId);

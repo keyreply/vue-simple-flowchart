@@ -1,9 +1,9 @@
 <template>
   <div id="app">
     <div id="title">
-      <div id="notification" style="z-index: 10">
+      <div id="notification">
         <el-alert
-          style="margin-bottom: 10px;"
+          style="margin-top: 10px;"
           center
           show-icon
           v-for="(notification, index) in notifications"
@@ -43,6 +43,7 @@
       @buttonDeleted="buttonDeleted"
       @canvasClick="canvasClick"
       @onDropNewNode="onCreateNode"
+      @notification="notificationUp($event.title, $event.type, $event.auto)"
       :height="800"
     />
     
@@ -1380,23 +1381,14 @@ export default {
           }
         ]
     }
-    // this.notificationUp('Welcome User', 'success');
-    // setTimeout(() => {
-    //   this.notificationUp('Nice to meet you', 'warning');
-    // }, 1000)
+    this.notificationUp('Welcome User', 'success', true);
+    setTimeout(() => {
+      this.notificationUp('Nice to meet you', 'warning', true);
+    }, 1000)
     // this.scene.nodes = temp.nodes;
     // this.scene.links = temp.links.filter((link) => Boolean(temp.nodes.find((node) => node.id === link.to)));
     // console.log('FILTER LINKS', temp.links.filter((link) => Boolean(temp.nodes.find((node) => node.id === link.to))).length);
     // console.log({temp, scene: this.scene})
-  },
-  watch: {
-    notifications: {
-      handler: 
-        function() {
-          this.notifications = this.notifications.filter((item) => item.status);
-        },
-      deep: true
-    }
   },
   methods: {
     notificationUp(title, type, auto) {
@@ -1421,11 +1413,10 @@ export default {
       }, 3000)
     },
     clearNotification(id) {
-      console.log('TRIGGERED', id);
       const notification = this.notifications.find((item) => item.id === id);
       
       notification.status = false;
-      this.notifications = this.notifications.filter((item) => item.status);
+      // this.notifications = this.notifications.filter((item) => item.id !== id);
     },
     canvasClick(e) {
       console.log('canvas Click, event:', e)
@@ -1523,5 +1514,15 @@ export default {
     // border-radius: 10px;
     overflow: scroll;
   }
+}
+
+#notification {
+  position: fixed;
+  top: 0;
+  left: 0;
+  padding-left: 10px;
+  padding-right: 10px;
+  width: 98%;
+  z-index: 10;
 }
 </style>
