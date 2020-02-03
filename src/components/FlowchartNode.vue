@@ -356,6 +356,11 @@ export default {
         buttons[i].height = btnHeight;
         buttons[i].show = false;
         // add styled buttons as variable
+
+        // if(this.id === 'conversation_resume_livechat') {
+        //   console.log({labelTitleElement});
+        //   console.log({ additionalHeight, nodeTypeHeight, labelTitleHeight })
+        // }
         this.styledButtons = _.cloneDeep(buttons);
       }
     },

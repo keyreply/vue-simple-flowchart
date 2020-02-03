@@ -203,8 +203,8 @@ export default {
             message: 'one of nodes not existed!',
             detail: {
               link,
-              fromNode,
-              toNode
+              fromNode: fromNode || 'not defined',
+              toNode: toNode || 'not defined'
             }
           }
 

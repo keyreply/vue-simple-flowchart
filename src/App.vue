@@ -40,6 +40,9 @@
       <div v-if="isErrorShow" class="panel-area">
         <el-card v-html="isRawError ? rawErrors : prettyErrors" class="extraction-panel" />
       </div>
+      <div class="tool-wrapper">
+        <el-input-number v-model="scene.scale" :step="0.1" :precision="1" />
+      </div>
     </div>
     
     <simple-flowchart
@@ -1402,10 +1405,7 @@ export default {
           }
         ]
     }
-    this.notificationUp('Welcome User', 'success', true);
-    setTimeout(() => {
-      this.notificationUp('Nice to meet you', 'warning', true);
-    }, 1000)
+
     this.scene.nodes = temp.nodes;
     this.scene.links = temp.links;
     // this.scene.links = temp.links.filter((link) => Boolean(temp.nodes.find((node) => node.id === link.to)));
