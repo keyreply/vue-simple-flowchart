@@ -3,12 +3,14 @@
     @mousedown="handleMousedown"
     @mouseover="handleMouseOver"
     @mouseleave="handleMouseLeave"
-    v-bind:class="{selected: options.selected === id}"
+    :class="{selected: options.selected === id}"
   >
-    <div class="node-port node-input" :class="{ 'node-port-start': isStart, 'editing': options.selected === id && !options.moving, 'editing-start': isStart && options.selected === id && !options.moving }"
+    <div
+      class="node-port node-input"
+      :class="{ 'node-port-start': isStart, 'editing': options.selected === id && !options.moving, 'editing-start': isStart && options.selected === id && !options.moving }"
       @mousedown="inputMouseDown"
       @mouseup="inputMouseUp"
-    ></div>
+    />
     <div :id="'node-main_' + id" class="node-main">
       <div v-if="isStart" :id="'node-main_' + id" class="node-start">
         <el-input v-if="editing.start" :value="startNodeTitle" @input="$emit('update:startNodeTitle', $event)" />
@@ -84,23 +86,29 @@
               <span v-else>{{button.text}}</span>
               <div style="top: -20px; right: -20px" v-show="editing.options.value && button.show" class="button-delete" @click="$emit('deleteButtonNode', button.id)">&times;</div>
             </div>
-            <div class="node-port node-output" :id="'port_' + id + '_' + index" :class="{ 'node-port-start': isStart }" 
+            <div class="node-port node-output"
+              :id="'port_' + id + '_' + index"
+              :class="{ 'node-port-start': isStart }" 
               :style="button.style"
               @mousedown="outputMouseDown"
               @mousemove="outputMouseMoveFromButtonNode(index)"
               @mouseup="outputMouseUp"
               @mouseleave="outputMouseUp"
-            ></div>
+            />
           </div>
         </div>
       </div>
     </div>
-    <div v-if="buttons.length === 0" :id="'node-output_' + id" class="node-port node-output" :class="{ 'node-port-start': isStart, 'editing': options.selected === id && !options.moving }"
+    <div
+      v-if="buttons.length === 0"
+      :id="'node-output_' + id"
+      class="node-port node-output"
+      :class="{ 'node-port-start': isStart, 'editing': options.selected === id && !options.moving, 'editing-start': isStart && options.selected === id && !options.moving }"
       @mousedown="outputMouseDown"
       @mousemove="outputMouseMove"
       @mouseleave="outputMouseUp"
-      @mouseup="outputMouseUp">
-    </div>
+      @mouseup="outputMouseUp"
+    />
     <div
       v-if="options.selected === id && !options.moving"
       :id="'add-button_' + id"
@@ -142,11 +150,11 @@ export default {
       }
     },
     id: {
-      type: Number,
-      default: 1000,
-      validator(val) {
-        return typeof val === 'number'
-      }
+      // type: Number,
+      default: 'newNodeId',
+      // validator(val) {
+      //   return typeof val === 'number'
+      // }
     },
     x: {
       type: Number,
@@ -246,9 +254,26 @@ export default {
   watch: {
     buttons: {
       handler:
-        function(val) {
+        function(val, old) {
           this.refreshButtons();
-          this.$emit('updateLines', { buttonHeight: this.getButtonHeight('new option'), buttonsLength: val.length });
+          if (val.length < old.length) {
+            let tmp = [...old];
+            let deleted = null;
+
+            old.forEach((item) => {
+              const found = val.find((subitem) => subitem.id === item.id);
+              
+              if (found) {
+                tmp = tmp.filter((x) => x.id !== found.id);
+              } else {
+                deleted = item;
+              }
+            })
+
+            this.$emit('updateLines', { buttonHeight: -this.getButtonHeight(deleted.text), buttonsLength: old.length })
+          } else if (val.length > old.length) {
+            this.$emit('updateLines', { buttonHeight: this.getButtonHeight('new option'), buttonsLength: val.length }); 
+          }
         },
       deep: true
     },
@@ -331,6 +356,11 @@ export default {
         buttons[i].height = btnHeight;
         buttons[i].show = false;
         // add styled buttons as variable
+
+        // if(this.id === 'conversation_resume_livechat') {
+        //   console.log({labelTitleElement});
+        //   console.log({ additionalHeight, nodeTypeHeight, labelTitleHeight })
+        // }
         this.styledButtons = _.cloneDeep(buttons);
       }
     },
@@ -393,26 +423,26 @@ export default {
       this.show.delete = false;
     },
     getButtonHeight(btnText) {
-        // create fake button
-        const fakeBtn = document.createElement('div');
-        fakeBtn.style = "padding: 10px; width: 224px; border-radius: 4px; line-height: 1.35;"
-        // fakeBtn.style.visibility = 'hidden';
-        if (this.editing.options.value) {
-          const textarea = document.createElement('textarea');
-          textarea.className = "el-textarea__inner";
-          textarea.style = "min-height: 33px";
-          textarea.rows = this.temp.buttonRows;
-          fakeBtn.appendChild(textarea);
-        } else {
-          const text = document.createElement('span');
-          text.style="font-size: 14px; text-align: center; font-weight: 600;";
-          text.innerHTML = btnText;
-          fakeBtn.appendChild(text);
-        }
-        document.getElementById('app').appendChild(fakeBtn);
-        const height = fakeBtn.offsetHeight;
-        document.getElementById('app').removeChild(fakeBtn);
-        return height;
+      // create fake button
+      const fakeBtn = document.createElement('div');
+      fakeBtn.style = "padding: 10px; width: 224px; border-radius: 4px; line-height: 1.35;"
+      // fakeBtn.style.visibility = 'hidden';
+      if (this.editing.options.value) {
+        const textarea = document.createElement('textarea');
+        textarea.className = "el-textarea__inner";
+        textarea.style = "min-height: 33px";
+        textarea.rows = this.temp.buttonRows;
+        fakeBtn.appendChild(textarea);
+      } else {
+        const text = document.createElement('span');
+        text.style="font-size: 14px; text-align: center; font-weight: 600;";
+        text.innerHTML = btnText;
+        fakeBtn.appendChild(text);
+      }
+      document.getElementById('app').appendChild(fakeBtn);
+      const height = fakeBtn.offsetHeight;
+      document.getElementById('app').removeChild(fakeBtn);
+      return height;
     },
     outputMouseDown(e) {
       this.linkingStart = true;
