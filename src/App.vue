@@ -182,19 +182,7 @@ export default {
             id: 7,
             from: 2, // node id the link start
             button: 2,
-            to: 3,  // node id the link end
-          },
-          {
-            id: 8,
-            from: 3, // node id the link start
-            button: undefined,
             to: 4,  // node id the link end
-          },
-          {
-            id: 9,
-            from: 4, // node id the link start
-            button: undefined,
-            to: 1,  // node id the link end
           },
         ]
       },
@@ -1406,8 +1394,8 @@ export default {
         ]
     }
 
-    this.scene.nodes = temp.nodes;
-    this.scene.links = temp.links;
+    // this.scene.nodes = temp.nodes;
+    // this.scene.links = temp.links;
     // this.scene.links = temp.links.filter((link) => Boolean(temp.nodes.find((node) => node.id === link.to)));
     // console.log('FILTER LINKS', temp.links.filter((link) => Boolean(temp.nodes.find((node) => node.id === link.to))).length);
     // console.log({temp, scene: this.scene})
