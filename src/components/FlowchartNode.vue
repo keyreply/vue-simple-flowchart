@@ -7,7 +7,7 @@
   >
     <div
       class="node-port node-input"
-      :class="{ 'node-port-start': isStart, 'editing': options.selected === id && !options.moving, 'editing-start': isStart && options.selected === id && !options.moving }"
+      :class="{ 'node-port-start': isStart, 'editing': options.selected === id && !options.moving && editing.isShowOptions, 'editing-start': isStart && options.selected === id && !options.moving && editing.isShowOptions }"
       @mousedown="inputMouseDown"
       @mouseup="inputMouseUp"
     />
@@ -106,7 +106,7 @@
       v-if="buttons.length === 0 || !editing.isShowOptions"
       :id="'node-output_' + id"
       class="node-port node-output"
-      :class="{ 'node-port-start': isStart, 'editing': options.selected === id && !options.moving, 'editing-start': isStart && options.selected === id && !options.moving }"
+      :class="{ 'node-port-start': isStart, 'editing': options.selected === id && !options.moving && editing.isShowOptions, 'editing-start': isStart && options.selected === id && !options.moving && editing.isShowOptions }"
       @mousedown="outputMouseDown"
       @mousemove="outputMouseMove"
       @mouseleave="outputMouseUp"
