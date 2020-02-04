@@ -12,7 +12,7 @@
         </div>
       </div>
       <v-touch class="flowchart-container"
-        @tap="pinchin"
+        @tap="vtouch"
       >
         <div 
           @mousemove="handleMove" 
@@ -29,7 +29,11 @@
             @linkingStart="linkingStart(node.id, $event)"
             @linkingStop="linkingStop(node.id)"
             @nodeSelected="nodeSelected(node.id, $event)"
-            @updateLines="updateLines(node.id, $event)">
+            @updateLines="updateLines(node.id, $event)"
+            @updateButtonText="updateButtonText(node.id, $event)"
+            @deleteButtonNode="deleteButtonNode(node.id, $event)"
+            @nodeDelete="nodeDelete(node.id)"
+            :foundIsStart="foundIsStart">
           </flowchart-node>
           <svg width="100%" :height="`${height}px`">
             <flowchart-link v-bind.sync="link"
@@ -135,30 +139,33 @@ export default {
         moving: this.action.moving
       }
     },
+    foundIsStart() {
+      return Boolean(this.scene.nodes.find((node) => node.isStart));
+    }
   },
   mounted() {
     this.rootDivOffset.top = this.$el ? this.$el.offsetTop : 0;
     this.rootDivOffset.left = this.$el ? this.$el.offsetLeft : 0;
   },
   methods: {
-    pinchin(e) {
-      // eslint-disable-next-line
-      console.log({e});
+    // eslint-disable-next-line
+    vtouch(e) {
+      // console.log({e});
     },
-    addingButtons(id, newButton) {
-      const node = this.findNodeWithID(id);
+    addingButtons(nodeId, newButton) {
+      const node = this.findNodeWithID(nodeId);
 
       if (!node.buttons || !node.buttons.length) {
         node.buttons = [];
         if (newButton) {
-          this.scene.links = this.scene.links.filter((link) => link.from !== id);
+          this.scene.links = this.scene.links.filter((link) => link.from !== nodeId);
         }
       }
       if (newButton) {
         // node.buttons.push(newButton);
         node.buttons = [...node.buttons, newButton]
       }
-      this.$emit('buttonAdded', newButton);
+      this.$emit('buttonAdded', { nodeId, newButton });
     },
     updateLines(toNodeId, { buttonHeight, buttonsLength }) {
       this.updateLineStatus = {
@@ -168,8 +175,22 @@ export default {
         buttonsLength
       }
     },
+    updateButtonText(nodeId, { buttonId, text }) {
+      const updatedButton = this.findNodeWithID(nodeId).buttons.find((button) => button.id === buttonId);
+
+      updatedButton.text = text;
+      this.$emit('buttonUpdated', { nodeId, updatedButton });
+    },
+    deleteButtonNode(nodeId, buttonId) {
+      const node = this.findNodeWithID(nodeId);
+      const deletedButton = node.buttons.find((button) => button.id === buttonId);
+
+      node.buttons = node.buttons.filter((button) => button.id !== buttonId);
+      this.scene.links = this.scene.links.filter((link) => link.from !== nodeId || link.button !== buttonId);
+      this.$emit('buttonDeleted', { nodeId, deletedButton });
+    },
     lines() {
-      const lines = this.scene.links.map((link) => {
+        const lines = this.scene.links.map((link) => {
         const fromNode = this.findNodeWithID(link.from)
         const toNode = this.findNodeWithID(link.to)
         let x, y, cy, cx, ex, ey;
@@ -182,10 +203,12 @@ export default {
         [ex, ey] = this.getPortPosition(toNode, 'left', x, y);
 
         if (this.updateLineStatus.status && this.updateLineStatus.toNodeId === link.to) {
-          ey += this.updateLineStatus.buttonHeight / 2;
+          if (this.updateLineStatus.buttonHeight) {
+            ey += this.updateLineStatus.buttonHeight / 2;
+          }
 
           let element = document.getElementById('button_' + toNode.id + '_' + (this.updateLineStatus.buttonsLength - 1));
-          if (element) {
+          if (element || !this.updateLineStatus.buttonHeight) {
             this.updateLineStatus = {
               status: false,
               toNodeId: null,
@@ -221,29 +244,17 @@ export default {
       })
     },
     getPortPosition(node, type, x, y, buttonId) {
-      // const nodeTypeElement = document.getElementById('node-type_' + id);
-      const labelElement = document.getElementById('node-main_' + node.id);
-      // const nodeButtonsElement = document.getElementById('node-buttons_' + id);
-      // let nodeTypeHeight = 0;
-          // nodeTypeWidth = 0;
-      // if (nodeTypeElement) {
-      //   nodeTypeHeight = nodeTypeElement.offsetHeight;
-        // nodeTypeWidth = nodeTypeElement.offsetWidth;
-      // }
       let labelHeight = 0,
           labelWidth = 0;
+      
+      let additionalHeight = 0;
+
+      const labelElement = document.getElementById('node-main_' + node.id);
       if (labelElement) {
         labelHeight = labelElement.offsetHeight;
         labelWidth = labelElement.offsetWidth;
       }
-      // let buttonsHeight = 0;
-          // buttonsWidth = 0;
-      // if (nodeButtonsElement) {
-      //   buttonsHeight = nodeButtonsElement.offsetHeight;
-        // buttonsWidth = nodeButtonsElement.offsetWidth;
-      // }
-      // check if start node, then add margin top by 50px (manually)
-      let additionalHeight = 0;
+
       if(node.isStart) {
         const nodeStartTitleElement = document.getElementsByClassName('node-start')[0];
         additionalHeight += nodeStartTitleElement ? nodeStartTitleElement.offsetHeight : 0;
@@ -276,32 +287,26 @@ export default {
         // }
         const nodeTypeHeight = nodeTypeElement.offsetHeight;
         const labelTitleHeight = labelTitleElement.offsetHeight;
-        // console.log({nodeTypeHeight, labelTitleHeight})
+        // if (node.id === 1) {
+        //   console.log({nodeTypeHeight, labelTitleHeight})
+        // }
         let buttonHeight = labelTitleHeight + nodeTypeHeight;
 
         let element = null;
         for (let i = buttonIndex; i >= 0; i--) {
           // console.log({i, buttonHeight, additionalHeight})
           element = document.getElementById('button_' + node.id + '_' + i);
-          // if (element) {
-          //   console.log({element});
-          // }
-          // const elementHeight = element.offsetHeight;
-          // console.log({elementHeight})
+
           if(!element) { continue; }
-          // console.log({first: buttonHeight});
           if(i === buttonIndex) {
             buttonHeight += element.offsetHeight/1.75;
           } else {
             buttonHeight += element.offsetHeight;
           }
-          // console.log({second: buttonHeight});
         }
 
         buttonHeight += additionalHeight;
-        // console.log({buttonIndex, buttonHeight, first: buttonHeight, second: labelHeight + 41 * (buttonIndex + 0.5 - node.buttons.length)})
         return [x + labelWidth, y + buttonHeight];
-        // return [x + labelWidth, y + labelHeight + 41 * (buttonIndex + 0.5 - node.buttons.length)]
       }
       else if (type === 'left') {
         return [x, y + labelHeight/2 + additionalHeight/2]

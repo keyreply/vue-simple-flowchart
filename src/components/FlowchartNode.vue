@@ -5,20 +5,85 @@
     @mouseleave="handleMouseLeave"
     v-bind:class="{selected: options.selected === id}"
   >
-    <div class="node-port node-input" :class="{ 'node-port-start': isStart, 'editing': options.selected === id && !options.moving, 'editing-start': isStart && options.selected === id && !options.dragging }"
+    <div class="node-port node-input" :class="{ 'node-port-start': isStart, 'editing': options.selected === id && !options.moving, 'editing-start': isStart && options.selected === id && !options.moving }"
       @mousedown="inputMouseDown"
       @mouseup="inputMouseUp"
     ></div>
     <div :id="'node-main_' + id" class="node-main">
       <div v-if="isStart" :id="'node-main_' + id" class="node-start">
-        <span>{{startNodeTitle}}</span>
+        <el-input v-if="editing.start" :value="startNodeTitle" @input="$emit('update:startNodeTitle', $event)" />
+        <span v-else>{{startNodeTitle}}</span>
       </div>
-      <div ref="nodeType" :id="'node-type_' + id" v-text="type" class="node-type"></div>
+      <div ref="nodeType" :id="'node-type_' + id" class="node-type">
+        <div style="display: flex; align-items: center;">
+          <el-select v-if="editing.type" :value="type" @input="$emit('update:type', nodeCategory[$event])" >
+            <el-option v-for="(item, index) in nodeCategory" :key="index" :value="index">{{item}}</el-option>
+          </el-select>
+          <span v-else style="flex-grow: 1">{{type}}</span>
+          <el-popover
+            placement="right-start"
+            width="200"
+            trigger="hover"
+            title="Edit Menu"
+          >
+            <div style="display: flex; flex-direction: column;">
+              <div style="display: flex;">
+                <span style="flex-grow: 1;">Node Start</span>
+                <el-switch :disabled="foundIsStart && !isStart" :value="isStart" @input="$emit('update:isStart', !isStart); delay()"/>
+              </div>
+              <el-popover
+                placement="right-start"
+                width="200"
+                trigger="hover"
+                title="Version"
+              >
+                <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                  <el-button type="text" plain>English</el-button>
+                </div>
+                <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                  <el-button type="text" plain>Bahasa Indonesia</el-button>
+                </div>
+                <div slot="reference" style="display: flex; flex-direction: column; flex-grow: 1;">
+                  <el-button type="text" plain>Version</el-button>
+                </div>
+              </el-popover>
+              <el-divider content-position="left">Node Details</el-divider>
+              <div v-if="isStart" style="display: flex; flex-direction: column; flex-grow: 1;">
+                <el-button :icon="editing.start ? 'el-icon-edit' : null" :type="editing.start ? 'primary' : 'text'" plain @click="editing.start = !editing.start; delay()">Start Title</el-button>
+              </div>
+              <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                <el-button :icon="editing.type ? 'el-icon-edit' : null" :type="editing.type ? 'primary' : 'text'" plain @click="editing.type = !editing.type; delay()">Type</el-button>
+              </div>
+              <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                <el-button :icon="editing.label ? 'el-icon-edit' : null" :type="editing.label ? 'primary' : 'text'" plain @click="editing.label = !editing.label; delay()">Label</el-button>
+              </div>
+              <div v-if="buttons.length" style="display: flex; flex-direction: column; flex-grow: 1;">
+                <el-button :icon="editing.options.value ? 'el-icon-edit' : null" :type="editing.options.value ? 'primary' : 'text'" plain @click="editing.options.value = !editing.options.value; delay()">Options</el-button>
+              </div>
+              <el-divider content-position="left">Settings</el-divider>
+              <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                <el-button :id="'config-button_' + id" type="text" plain @click="showingDrawer">Showing Configurations</el-button>
+              </div>
+              <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                <el-button icon="el-icon-delete" type="danger" @click="$emit('nodeDelete')">Delete this node</el-button>
+              </div>
+            </div>
+            <el-button slot="reference" icon="el-icon-more" type="warning" size="mini" plain circle></el-button>
+          </el-popover>
+        </div>
+      </div>
       <div class="node-label" :id="'label_' + id">
-        <div ref="labelTitle" class="node-label-title" :id="'label-title_' + id" v-text="label" />
+        <div ref="labelTitle" class="node-label-title" :id="'label-title_' + id">
+          <el-input v-if="editing.label" type="textarea" :rows="3" :value="label" @input="$emit('update:label', $event)" />
+          <span v-else>{{label}}</span>
+        </div>
         <div v-if="buttons.length > 0" class="node-buttons" :id="'node-buttons_' + id">
-          <div v-for="(button, index) in styledButtons" :key="index" :id="'button_' + id + '_' + index" class="node-label-button">
-            <span>{{button.text}}</span>
+          <div @mouseover="button.show = true" @mouseleave="button.show = false" v-for="(button, index) in styledButtons" :key="index" :id="'button_' + id + '_' + index" class="node-label-button">
+            <div style="position: relative">
+              <el-input v-if="editing.options.value" type="textarea" :rows="temp.buttonRows" :value="button.text" @input="$emit('updateButtonText', { text: $event, buttonId: button.id })" />
+              <span v-else>{{button.text}}</span>
+              <div style="top: -20px; right: -20px" v-show="editing.options.value && button.show" class="button-delete" @click="$emit('deleteButtonNode', button.id)">&times;</div>
+            </div>
             <div class="node-port node-output" :id="'port_' + id + '_' + index" :class="{ 'node-port-start': isStart }" 
               :style="button.style"
               @mousedown="outputMouseDown"
@@ -44,14 +109,6 @@
     >
       <span>Add other options...</span>
     </div>
-    <div
-      v-if="options.selected === id && !options.moving"
-      :id="'config-button_' + id"
-      class="node-config-button"
-      @click="showingDrawer"
-    >
-      <span>Show configurations...</span>
-    </div>
     <div v-show="show.delete" class="node-delete">&times;</div>
   </div>
 </template>
@@ -61,6 +118,10 @@ import * as _ from 'lodash';
 export default {
   name: 'FlowchartNode',
   props: {
+    foundIsStart: {
+      type: Boolean,
+      default: false
+    },
     showDrawer: {
       type: Object,
       default() {
@@ -148,11 +209,32 @@ export default {
   },
   data() {
     return {
+      temp: {
+        buttonRows: 2
+      },
       styledButtons: [],
       show: {
         delete: false,
       },
-      linkingStart: false
+      linkingStart: false,
+      editing: {
+        start: false,
+        type: false,
+        label: false,
+        options: {
+          value: false
+          // buttons: this.buttons.map(() => false)
+        },
+        cache: false
+      },
+      nodeCategory:[
+        'Rule',
+        'Action',
+        'Script',
+        'Decision',
+        'Fork',
+        'Join',
+      ]
     }
   },
   created() {
@@ -169,9 +251,23 @@ export default {
           this.$emit('updateLines', { buttonHeight: this.getButtonHeight('new option'), buttonsLength: val.length });
         },
       deep: true
+    },
+    editing: {
+      // eslint-disable-next-line
+      handler: function(val) {
+        this.refreshAll();
+      },
+      deep: true
+    },
+    // eslint-disable-next-line
+    isStart: function(val) {
+      this.refreshAll();
     }
   },
   computed: {
+    isEditing() {
+      return this.editing.start || this.editing.type || this.editing.label || this.editing.options.value;
+    },
     nodeStyle() {
       return {
         top: ((this.centeredY || this.y)  * this.options.scale) + 'px', // remove: this.options.offsetTop + 
@@ -181,6 +277,15 @@ export default {
     }
   },
   methods: {
+    refreshAll() {
+      this.$emit('updateLines', {});
+      this.refreshButtons();
+    },
+    delay() {
+      setTimeout(() => {
+        this.editing.cache = !this.editing.cache;
+      }, 1)
+    },
     refreshButtons() {
       const buttons = _.cloneDeep(this.buttons);
 
@@ -224,7 +329,7 @@ export default {
           marginTop: '0px'
         }
         buttons[i].height = btnHeight;
-
+        buttons[i].show = false;
         // add styled buttons as variable
         this.styledButtons = _.cloneDeep(buttons);
       }
@@ -277,7 +382,9 @@ export default {
       if (target.className.indexOf('node-input') < 0 && target.className.indexOf('node-output') < 0) {
         this.$emit('nodeSelected', e);
       }
-      e.preventDefault();
+      if (!this.isEditing) {
+        e.preventDefault();
+      }
     },
     handleMouseOver() {
       this.show.delete = true;
@@ -290,10 +397,18 @@ export default {
         const fakeBtn = document.createElement('div');
         fakeBtn.style = "padding: 10px; width: 224px; border-radius: 4px; line-height: 1.35;"
         // fakeBtn.style.visibility = 'hidden';
-        const text = document.createElement('span');
-        text.style="font-size: 14px; text-align: center; font-weight: 600;";
-        text.innerHTML = btnText;
-        fakeBtn.appendChild(text);
+        if (this.editing.options.value) {
+          const textarea = document.createElement('textarea');
+          textarea.className = "el-textarea__inner";
+          textarea.style = "min-height: 33px";
+          textarea.rows = this.temp.buttonRows;
+          fakeBtn.appendChild(textarea);
+        } else {
+          const text = document.createElement('span');
+          text.style="font-size: 14px; text-align: center; font-weight: 600;";
+          text.innerHTML = btnText;
+          fakeBtn.appendChild(text);
+        }
         document.getElementById('app').appendChild(fakeBtn);
         const height = fakeBtn.offsetHeight;
         document.getElementById('app').removeChild(fakeBtn);
@@ -426,10 +541,10 @@ $portSize: 16;
       transform: translateY(-50%);
     }
     &.editing {
-      margin-top: -44px;
+      margin-top: -22px;
     }
     &.editing-start {
-      margin-top: -27px;
+      margin-top: -5px;
     }
   }
   .node-input {
@@ -438,7 +553,7 @@ $portSize: 16;
   .node-output {
     right: #{-2+$portSize/-3}px;
   }
-  .node-delete {
+  .node-delete, .button-delete{
     position: absolute;
     right: -6px;
     top: -6px;
