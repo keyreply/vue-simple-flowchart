@@ -51,20 +51,23 @@
               </el-popover>
               <el-divider content-position="left">Node Details</el-divider>
               <div v-if="isStart" style="display: flex; flex-direction: column; flex-grow: 1;">
-                <el-button :icon="editing.start ? 'el-icon-edit' : null" :type="editing.start ? 'primary' : 'text'" plain @click="editing.start = !editing.start; delay()">Start Title</el-button>
+                <el-button :icon="editing.start ? 'el-icon-unlock' : 'el-icon-lock'" :type="editing.start ? 'primary' : 'text'" plain @click="editing.start = !editing.start; delay()">Start Title</el-button>
               </div>
               <div style="display: flex; flex-direction: column; flex-grow: 1;">
-                <el-button :icon="editing.type ? 'el-icon-edit' : null" :type="editing.type ? 'primary' : 'text'" plain @click="editing.type = !editing.type; delay()">Type</el-button>
+                <el-button :icon="editing.type ? 'el-icon-unlock' : 'el-icon-lock'" :type="editing.type ? 'primary' : 'text'" plain @click="editing.type = !editing.type; delay()">Type</el-button>
               </div>
               <div style="display: flex; flex-direction: column; flex-grow: 1;">
-                <el-button :icon="editing.label ? 'el-icon-edit' : null" :type="editing.label ? 'primary' : 'text'" plain @click="editing.label = !editing.label; delay()">Label</el-button>
+                <el-button :icon="editing.label ? 'el-icon-unlock' : 'el-icon-lock'" :type="editing.label ? 'primary' : 'text'" plain @click="editing.label = !editing.label; delay()">Label</el-button>
               </div>
               <div v-if="buttons.length" style="display: flex; flex-direction: column; flex-grow: 1;">
-                <el-button :icon="editing.options.value ? 'el-icon-edit' : null" :type="editing.options.value ? 'primary' : 'text'" plain @click="editing.options.value = !editing.options.value; delay()">Options</el-button>
+                <el-button :icon="editing.options.value ? 'el-icon-unlock' : 'el-icon-lock'" :type="editing.options.value ? 'primary' : 'text'" plain @click="editing.options.value = !editing.options.value; delay()">Options</el-button>
               </div>
               <el-divider content-position="left">Settings</el-divider>
               <div style="display: flex; flex-direction: column; flex-grow: 1;">
-                <el-button :id="'config-button_' + id" type="text" plain @click="showingDrawer">Showing Configurations</el-button>
+                <el-button :icon="editing.isShowOptions ? 'el-icon-unlock' : 'el-icon-lock'" :type="editing.isShowOptions ? 'primary' : 'text'" plain @click="editing.isShowOptions = !editing.isShowOptions; delay()">Show Node Options</el-button>
+              </div>
+              <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                <el-button :id="'config-button_' + id" type="text" plain @click="showingDrawer">Show Configurations</el-button>
               </div>
               <div style="display: flex; flex-direction: column; flex-grow: 1;">
                 <el-button icon="el-icon-delete" type="danger" @click="$emit('nodeDelete')">Delete this node</el-button>
@@ -79,7 +82,7 @@
           <el-input v-if="editing.label" type="textarea" :rows="3" :value="label" @input="$emit('update:label', $event)" />
           <span v-else>{{label}}</span>
         </div>
-        <div v-if="buttons.length > 0" class="node-buttons" :id="'node-buttons_' + id">
+        <div v-if="buttons.length > 0 && editing.isShowOptions" class="node-buttons" :id="'node-buttons_' + id">
           <div @mouseover="button.show = true" @mouseleave="button.show = false" v-for="(button, index) in styledButtons" :key="index" :id="'button_' + id + '_' + index" class="node-label-button">
             <div style="position: relative">
               <el-input v-if="editing.options.value" type="textarea" :rows="temp.buttonRows" :value="button.text" @input="$emit('updateButtonText', { text: $event, buttonId: button.id })" />
@@ -100,7 +103,7 @@
       </div>
     </div>
     <div
-      v-if="buttons.length === 0"
+      v-if="buttons.length === 0 || !editing.isShowOptions"
       :id="'node-output_' + id"
       class="node-port node-output"
       :class="{ 'node-port-start': isStart, 'editing': options.selected === id && !options.moving, 'editing-start': isStart && options.selected === id && !options.moving }"
@@ -110,7 +113,7 @@
       @mouseup="outputMouseUp"
     />
     <div
-      v-if="options.selected === id && !options.moving"
+      v-if="options.selected === id && !options.moving && editing.isShowOptions"
       :id="'add-button_' + id"
       class="node-config-button"
       @click="addingButton"
@@ -233,6 +236,7 @@ export default {
           value: false
           // buttons: this.buttons.map(() => false)
         },
+        isShowOptions: false,
         cache: false
       },
       nodeCategory:[
