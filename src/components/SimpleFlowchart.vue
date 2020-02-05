@@ -322,7 +322,7 @@ export default {
             return null;
           }
         } else {
-          if (buttonId === -1 && this.draggingLink && this.draggingLink.buttonIndex !== undefined && !this.updateLineStatus.locking[index]) { // this line is important! -1 means the condition is in dragginglink
+          if (buttonId === -1 && this.draggingLink && this.draggingLink.buttonIndex !== undefined && !this.updateLineStatus.lockedNodes[index]) { // this line is important! -1 means the condition is in dragginglink
             buttonIndex = this.draggingLink.buttonIndex;
             // console.log({selected: this.draggingLink})
             // console.log({node, buttons: node.buttons})
