@@ -18,6 +18,7 @@
       </div>
       <div ref="nodeType" :id="'node-type_' + id" class="node-type">
         <div style="display: flex; align-items: center;">
+          <el-button slot="reference" :icon="editing.isShowOptions ? 'el-icon-unlock' : 'el-icon-lock'" type="warning" size="mini" plain circle @click="editing.isShowOptions = !editing.isShowOptions; delay()"></el-button>
           <el-select v-if="editing.type" :value="type" @input="$emit('update:type', nodeCategory[$event])" >
             <el-option v-for="(item, index) in nodeCategory" :key="index" :value="index">{{item}}</el-option>
           </el-select>
@@ -49,22 +50,24 @@
                   <el-button type="text" plain>Version</el-button>
                 </div>
               </el-popover>
-              <el-divider content-position="left">Node Details</el-divider>
-              <div v-if="isStart" style="display: flex; flex-direction: column; flex-grow: 1;">
-                <el-button :icon="editing.start ? 'el-icon-unlock' : 'el-icon-lock'" :type="editing.start ? 'primary' : 'text'" plain @click="editing.start = !editing.start; delay()">Start Title</el-button>
-              </div>
-              <div style="display: flex; flex-direction: column; flex-grow: 1;">
-                <el-button :icon="editing.type ? 'el-icon-unlock' : 'el-icon-lock'" :type="editing.type ? 'primary' : 'text'" plain @click="editing.type = !editing.type; delay()">Type</el-button>
-              </div>
-              <div style="display: flex; flex-direction: column; flex-grow: 1;">
-                <el-button :icon="editing.label ? 'el-icon-unlock' : 'el-icon-lock'" :type="editing.label ? 'primary' : 'text'" plain @click="editing.label = !editing.label; delay()">Label</el-button>
-              </div>
-              <div v-if="buttons.length" style="display: flex; flex-direction: column; flex-grow: 1;">
-                <el-button :icon="editing.options.value ? 'el-icon-unlock' : 'el-icon-lock'" :type="editing.options.value ? 'primary' : 'text'" plain @click="editing.options.value = !editing.options.value; delay()">Options</el-button>
-              </div>
+              <template v-if="editing.isShowOptions">
+                <el-divider content-position="left">Node Details</el-divider>
+                <div v-if="isStart" style="display: flex; flex-direction: column; flex-grow: 1;">
+                  <el-button :icon="editing.start ? 'el-icon-unlock' : 'el-icon-lock'" :type="editing.start ? 'primary' : 'text'" plain @click="editing.start = !editing.start; delay()">Start Title</el-button>
+                </div>
+                <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                  <el-button :icon="editing.type ? 'el-icon-unlock' : 'el-icon-lock'" :type="editing.type ? 'primary' : 'text'" plain @click="editing.type = !editing.type; delay()">Type</el-button>
+                </div>
+                <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                  <el-button :icon="editing.label ? 'el-icon-unlock' : 'el-icon-lock'" :type="editing.label ? 'primary' : 'text'" plain @click="editing.label = !editing.label; delay()">Label</el-button>
+                </div>
+                <div v-if="buttons.length" style="display: flex; flex-direction: column; flex-grow: 1;">
+                  <el-button :icon="editing.options.value ? 'el-icon-unlock' : 'el-icon-lock'" :type="editing.options.value ? 'primary' : 'text'" plain @click="editing.options.value = !editing.options.value; delay()">Options</el-button>
+                </div>
+              </template>
               <el-divider content-position="left">Settings</el-divider>
               <div style="display: flex; flex-direction: column; flex-grow: 1;">
-                <el-button :icon="editing.isShowOptions ? 'el-icon-unlock' : 'el-icon-lock'" :type="editing.isShowOptions ? 'primary' : 'text'" plain @click="editing.isShowOptions = !editing.isShowOptions; delay()">Show Node Options</el-button>
+                <el-button :icon="editing.isShowOptions ? 'el-icon-unlock' : 'el-icon-lock'" :type="editing.isShowOptions ? 'primary' : 'text'" plain @click="editing.isShowOptions = !editing.isShowOptions; delay()">{{editing.isShowOptions ? 'Lock' : 'Unlock'}} Editing</el-button>
               </div>
               <div style="display: flex; flex-direction: column; flex-grow: 1;">
                 <el-button :id="'config-button_' + id" type="text" plain @click="showingDrawer">Show Configurations</el-button>
@@ -449,8 +452,10 @@ export default {
       return height;
     },
     outputMouseDown(e) {
-      this.linkingStart = true;
-      e.preventDefault();
+      if (this.editing.isShowOptions) {
+        this.linkingStart = true;
+        e.preventDefault();
+      }
     },
     // eslint-disable-next-line
     outputMouseMove(e) {
