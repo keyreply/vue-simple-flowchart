@@ -277,9 +277,9 @@ export default {
               }
             })
 
-            this.$emit('updateLines', { buttonHeight: -this.getButtonHeight(deleted.text), buttonsLength: old.length })
+            this.$emit('updateLines', { buttonHeight: -this.getButtonHeight(deleted.text), buttonsLength: old.length, locking: !this.editing.isShowOptions })
           } else if (val.length > old.length) {
-            this.$emit('updateLines', { buttonHeight: this.getButtonHeight('new option'), buttonsLength: val.length }); 
+            this.$emit('updateLines', { buttonHeight: this.getButtonHeight('new option'), buttonsLength: val.length, locking: !this.editing.isShowOptions }); 
           }
         },
       deep: true
@@ -310,7 +310,7 @@ export default {
   },
   methods: {
     refreshAll() {
-      this.$emit('updateLines', {});
+      this.$emit('updateLines', { locking: !this.editing.isShowOptions });
       this.refreshButtons();
     },
     delay() {
