@@ -120,7 +120,8 @@ export default {
         status: false,
         toNodeId: null,
         buttonHeight: null,
-        buttonsLength: null
+        buttonsLength: null,
+        lockedNodes: []
       }
     };
   },
@@ -147,6 +148,7 @@ export default {
   mounted() {
     this.rootDivOffset.top = this.$el ? this.$el.offsetTop : 0;
     this.rootDivOffset.left = this.$el ? this.$el.offsetLeft : 0;
+    this.updateLineStatus.lockedNodes = this.scene.nodes.map(() => true);
   },
   methods: {
     // eslint-disable-next-line
@@ -168,13 +170,22 @@ export default {
       }
       this.$emit('buttonAdded', { nodeId, newButton });
     },
-    updateLines(toNodeId, { buttonHeight, buttonsLength }) {
+    updateLines(toNodeId, { buttonHeight, buttonsLength, locking }) {
+      const foundIndex = this.scene.nodes.findIndex((node) => node.id === toNodeId);
+      
       this.updateLineStatus = {
         status: true,
         toNodeId,
         buttonHeight,
-        buttonsLength
+        buttonsLength,
+        lockedNodes: this.updateLineStatus.lockedNodes.map((stats, index) => index === foundIndex ? locking : stats)
       }
+
+      // this.updateLineStatus.status = true;
+      // this.updateLineStatus.toNodeId = toNodeId;
+      // this.updateLineStatus.buttonHeight = buttonHeight;
+      // this.updateLineStatus.buttonsLength = buttonsLength;
+      // this.updateLineStatus.lockedNodes[index] = locking;
     },
     updateButtonText(nodeId, { buttonId, text }) {
       const updatedButton = this.findNodeWithID(nodeId).buttons.find((button) => button.id === buttonId);
@@ -244,9 +255,12 @@ export default {
 
           let element = document.getElementById('button_' + toNode.id + '_' + (this.updateLineStatus.buttonsLength - 1));
           if ((this.updateLineStatus.buttonHeight >= 0 && element) || (this.updateLineStatus.buttonHeight < 0 && !element)) {
+            // this.updateLineStatus.status = false;
+            // this.updateLineStatus.buttonHeight = null;
+            // this.updateLineStatus.buttonsLength = null;
             this.updateLineStatus = {
+              ...this.updateLineStatus,
               status: false,
-              toNodeId: null,
               buttonHeight: null,
               buttonsLength: null
             }
@@ -300,14 +314,15 @@ export default {
 
       if (type === 'right') {
         let buttonIndex = null;
+        const index = this.scene.nodes.findIndex((nodeitem) => nodeitem.id === node.id);
 
-        if (buttonId && buttonId !== -1) {
+        if (buttonId && buttonId !== -1 && !this.updateLineStatus.lockedNodes[index]) {
           buttonIndex = node.buttons.findIndex((button) => button.id === buttonId);
           if (buttonIndex < 0) {
             return null;
           }
         } else {
-          if (buttonId === -1 && this.draggingLink && this.draggingLink.buttonIndex !== undefined) { // this line is important! -1 means the condition is in dragginglink
+          if (buttonId === -1 && this.draggingLink && this.draggingLink.buttonIndex !== undefined && !this.updateLineStatus.locking[index]) { // this line is important! -1 means the condition is in dragginglink
             buttonIndex = this.draggingLink.buttonIndex;
             // console.log({selected: this.draggingLink})
             // console.log({node, buttons: node.buttons})
