@@ -264,15 +264,13 @@ export default {
         function(val, old) {
           this.refreshButtons();
           if (val.length < old.length) {
-            let tmp = [...old];
             let deleted = null;
+            let found = null;
 
             old.forEach((item) => {
-              const found = val.find((subitem) => subitem.id === item.id);
+              found = val.find((subitem) => subitem.id === item.id);
               
-              if (found) {
-                tmp = tmp.filter((x) => x.id !== found.id);
-              } else {
+              if (!found) {
                 deleted = item;
               }
             })
