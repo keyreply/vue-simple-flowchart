@@ -145,6 +145,28 @@ export default {
       return Boolean(this.scene.nodes.find((node) => node.isStart));
     }
   },
+  watch: {
+    'scene.nodes': {
+      handler: function(val, old) {
+        if (val.length < old.length) { // deleted condition
+          let deletedIndex = null;
+          let found = null;
+
+          old.forEach((item, index) => {
+            found = val.find((subitem) => subitem.id === item.id);
+
+            if (!found) {
+              deletedIndex = index;
+            }
+          })
+          this.updateLineStatus.lockedNodes = this.updateLineStatus.lockedNodes.filter((item, index) => index !== deletedIndex);
+        } else if (val.length > old.length) {
+          this.updateLineStatus.lockedNodes = [...this.updateLineStatus.lockedNodes, true];
+        }
+      },
+      deep: true
+    }
+  },
   mounted() {
     this.rootDivOffset.top = this.$el ? this.$el.offsetTop : 0;
     this.rootDivOffset.left = this.$el ? this.$el.offsetLeft : 0;
