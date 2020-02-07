@@ -199,17 +199,10 @@ export default {
       
       this.updateLine = {
         ...this.updateLine,
-        status: true,
         toNodeId,
         buttonHeight,
         buttonsLength
       }
-
-      // this.updateLine.status = true;
-      // this.updateLine.toNodeId = toNodeId;
-      // this.updateLine.buttonHeight = buttonHeight;
-      // this.updateLine.buttonsLength = buttonsLength;
-      // this.updateLine.lockedNodes[index] = locking;
     },
     updateButtonText(nodeId, { buttonId, text }) {
       const updatedButton = this.findNodeWithID(nodeId).buttons.find((button) => button.id === buttonId);
@@ -272,16 +265,13 @@ export default {
         posResult = this.getPortPosition(toNode, 'left', x, y);
         [ex, ey] = posResult;
 
-        if (this.updateLine.status && this.updateLine.toNodeId === link.to) {
+        if (this.updateLine.toNodeId === link.to) {
           if (this.updateLine.buttonHeight) {
             ey += this.updateLine.buttonHeight / 2;
           }
 
           let element = document.getElementById('button_' + toNode.id + '_' + (this.updateLine.buttonsLength - 1));
           if ((this.updateLine.buttonHeight >= 0 && element) || (this.updateLine.buttonHeight < 0 && !element)) {
-            // this.updateLine.status = false;
-            // this.updateLine.buttonHeight = null;
-            // this.updateLine.buttonsLength = null;
             this.updateLine = {
               ...this.updateLine,
               buttonHeight: null,
