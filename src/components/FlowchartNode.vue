@@ -7,7 +7,7 @@
   >
     <div
       class="node-port node-input"
-      :class="{ 'node-port-start': isStart, 'editing': options.selected === id && !options.moving && !isLocked, 'editing-start': isStart && options.selected === id && !options.moving && !isLocked }"
+      :style="nodePortStyle"
       @mousedown="inputMouseDown"
       @mouseup="inputMouseUp"
     />
@@ -109,7 +109,7 @@
       v-if="buttons.length === 0 || !!isLocked"
       :id="'node-output_' + id"
       class="node-port node-output"
-      :class="{ 'node-port-start': isStart, 'editing': options.selected === id && !options.moving && !isLocked, 'editing-start': isStart && options.selected === id && !options.moving && !isLocked }"
+      :style="nodePortStyle"
       @mousedown="outputMouseDown"
       @mousemove="outputMouseMove"
       @mouseleave="outputMouseUp"
@@ -230,6 +230,7 @@ export default {
       temp: {
         buttonRows: 2
       },
+      additionalHeight: 0,
       styledButtons: [],
       show: {
         delete: false,
@@ -260,6 +261,7 @@ export default {
   },
   mounted() {
     this.refreshButtons();
+    this.refreshNodes();
   },
   watch: {
     buttons: {
@@ -313,12 +315,24 @@ export default {
         left: ((this.centeredX || this.x) * this.options.scale) + 'px', // remove: this.options.offsetLeft + 
         transform: `scale(${this.options.scale})`,
       }
+    },
+    nodePortStyle() {
+      return {
+        marginTop: this.additionalHeight + 'px'
+      }
     }
   },
   methods: {
+    refreshNodes() {
+      const startElement = document.getElementsByClassName('node-start')[0];
+      const configElement = document.getElementsByClassName('node-config-button')[0];
+
+      this.additionalHeight = ((this.isStart && startElement ? startElement.offsetHeight : 0) - (this.options.selected === this.id && !this.options.moving && !this.isLocked && configElement ? configElement.offsetHeight : 0)) / 2; 
+    },
     refreshAll() {
       this.$emit('updateLines', {});
       this.refreshButtons();
+      this.refreshNodes();
     },
     delay() {
       setTimeout(() => {
@@ -349,7 +363,6 @@ export default {
         additionalHeight += nodeStartTitleElement ? nodeStartTitleElement.offsetHeight : 0;
       }
       buttonHeight += additionalHeight;
-
 
       // calculate each port position
       for (let i = 0; i < buttons.length; i++) {
@@ -580,17 +593,6 @@ $portSize: 16;
     &:hover {
       background: $themeColor;
       border: 1px solid $themeColor;
-    }
-    &.node-port-start {
-      margin-top: 17px;
-      top: 50%;
-      transform: translateY(-50%);
-    }
-    &.editing {
-      margin-top: -22px;
-    }
-    &.editing-start {
-      margin-top: -5px;
     }
   }
   .node-input {
