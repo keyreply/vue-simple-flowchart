@@ -7,7 +7,7 @@
   >
     <div
       class="node-port node-input"
-      :class="{ 'node-port-start': isStart, 'editing': options.selected === id && !options.moving, 'editing-start': isStart && options.selected === id && !options.moving }"
+      :style="nodePortStyle"
       @mousedown="inputMouseDown"
       @mouseup="inputMouseUp"
     />
@@ -18,6 +18,7 @@
       </div>
       <div ref="nodeType" :id="'node-type_' + id" class="node-type">
         <div style="display: flex; align-items: center;">
+          <el-button slot="reference" :icon="!isLocked ? 'el-icon-unlock' : 'el-icon-lock'" type="warning" size="mini" plain circle @click="$emit('update:isLocked', !isLocked); delay()"></el-button>
           <el-select v-if="editing.type" :value="type" @input="$emit('update:type', nodeCategory[$event])" >
             <el-option v-for="(item, index) in nodeCategory" :key="index" :value="index">{{item}}</el-option>
           </el-select>
@@ -49,22 +50,27 @@
                   <el-button type="text" plain>Version</el-button>
                 </div>
               </el-popover>
-              <el-divider content-position="left">Node Details</el-divider>
-              <div v-if="isStart" style="display: flex; flex-direction: column; flex-grow: 1;">
-                <el-button :icon="editing.start ? 'el-icon-edit' : null" :type="editing.start ? 'primary' : 'text'" plain @click="editing.start = !editing.start; delay()">Start Title</el-button>
-              </div>
-              <div style="display: flex; flex-direction: column; flex-grow: 1;">
-                <el-button :icon="editing.type ? 'el-icon-edit' : null" :type="editing.type ? 'primary' : 'text'" plain @click="editing.type = !editing.type; delay()">Type</el-button>
-              </div>
-              <div style="display: flex; flex-direction: column; flex-grow: 1;">
-                <el-button :icon="editing.label ? 'el-icon-edit' : null" :type="editing.label ? 'primary' : 'text'" plain @click="editing.label = !editing.label; delay()">Label</el-button>
-              </div>
-              <div v-if="buttons.length" style="display: flex; flex-direction: column; flex-grow: 1;">
-                <el-button :icon="editing.options.value ? 'el-icon-edit' : null" :type="editing.options.value ? 'primary' : 'text'" plain @click="editing.options.value = !editing.options.value; delay()">Options</el-button>
-              </div>
+              <template v-if="!isLocked">
+                <el-divider content-position="left">Node Details</el-divider>
+                <div v-if="isStart" style="display: flex; flex-direction: column; flex-grow: 1;">
+                  <el-button :icon="editing.start ? 'el-icon-unlock' : 'el-icon-lock'" :type="editing.start ? 'primary' : 'text'" plain @click="editing.start = !editing.start; delay()">Start Title</el-button>
+                </div>
+                <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                  <el-button :icon="editing.type ? 'el-icon-unlock' : 'el-icon-lock'" :type="editing.type ? 'primary' : 'text'" plain @click="editing.type = !editing.type; delay()">Type</el-button>
+                </div>
+                <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                  <el-button :icon="editing.label ? 'el-icon-unlock' : 'el-icon-lock'" :type="editing.label ? 'primary' : 'text'" plain @click="editing.label = !editing.label; delay()">Label</el-button>
+                </div>
+                <div v-if="buttons.length" style="display: flex; flex-direction: column; flex-grow: 1;">
+                  <el-button :icon="editing.options.value ? 'el-icon-unlock' : 'el-icon-lock'" :type="editing.options.value ? 'primary' : 'text'" plain @click="editing.options.value = !editing.options.value; delay()">Options</el-button>
+                </div>
+              </template>
               <el-divider content-position="left">Settings</el-divider>
               <div style="display: flex; flex-direction: column; flex-grow: 1;">
-                <el-button :id="'config-button_' + id" type="text" plain @click="showingDrawer">Showing Configurations</el-button>
+                <el-button :icon="!isLocked ? 'el-icon-unlock' : 'el-icon-lock'" :type="!isLocked ? 'primary' : 'text'" plain @click="$emit('update:isLocked', !isLocked); delay()">{{!isLocked ? 'Lock' : 'Unlock'}} Editing</el-button>
+              </div>
+              <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                <el-button :id="'config-button_' + id" type="text" plain @click="showingDrawer">Show Configurations</el-button>
               </div>
               <div style="display: flex; flex-direction: column; flex-grow: 1;">
                 <el-button icon="el-icon-delete" type="danger" @click="$emit('nodeDelete')">Delete this node</el-button>
@@ -79,7 +85,7 @@
           <el-input v-if="editing.label" type="textarea" :rows="3" :value="label" @input="$emit('update:label', $event)" />
           <span v-else>{{label}}</span>
         </div>
-        <div v-if="buttons.length > 0" class="node-buttons" :id="'node-buttons_' + id">
+        <div v-if="buttons.length > 0 && !isLocked" class="node-buttons" :id="'node-buttons_' + id">
           <div @mouseover="button.show = true" @mouseleave="button.show = false" v-for="(button, index) in styledButtons" :key="index" :id="'button_' + id + '_' + index" class="node-label-button">
             <div style="position: relative">
               <el-input v-if="editing.options.value" type="textarea" :rows="temp.buttonRows" :value="button.text" @input="$emit('updateButtonText', { text: $event, buttonId: button.id })" />
@@ -100,17 +106,17 @@
       </div>
     </div>
     <div
-      v-if="buttons.length === 0"
+      v-if="buttons.length === 0 || !!isLocked"
       :id="'node-output_' + id"
       class="node-port node-output"
-      :class="{ 'node-port-start': isStart, 'editing': options.selected === id && !options.moving, 'editing-start': isStart && options.selected === id && !options.moving }"
+      :style="nodePortStyle"
       @mousedown="outputMouseDown"
       @mousemove="outputMouseMove"
       @mouseleave="outputMouseUp"
       @mouseup="outputMouseUp"
     />
     <div
-      v-if="options.selected === id && !options.moving"
+      v-if="options.selected === id && !options.moving && !isLocked"
       :id="'add-button_' + id"
       class="node-config-button"
       @click="addingButton"
@@ -126,6 +132,10 @@ import * as _ from 'lodash';
 export default {
   name: 'FlowchartNode',
   props: {
+    isLocked: {
+      type: Boolean,
+      default: true
+    },
     foundIsStart: {
       type: Boolean,
       default: false
@@ -220,6 +230,7 @@ export default {
       temp: {
         buttonRows: 2
       },
+      additionalHeight: 0,
       styledButtons: [],
       show: {
         delete: false,
@@ -250,6 +261,7 @@ export default {
   },
   mounted() {
     this.refreshButtons();
+    this.refreshNodes();
   },
   watch: {
     buttons: {
@@ -257,15 +269,13 @@ export default {
         function(val, old) {
           this.refreshButtons();
           if (val.length < old.length) {
-            let tmp = [...old];
             let deleted = null;
+            let found = null;
 
             old.forEach((item) => {
-              const found = val.find((subitem) => subitem.id === item.id);
+              found = val.find((subitem) => subitem.id === item.id);
               
-              if (found) {
-                tmp = tmp.filter((x) => x.id !== found.id);
-              } else {
+              if (!found) {
                 deleted = item;
               }
             })
@@ -284,6 +294,12 @@ export default {
       },
       deep: true
     },
+    isLocked: {
+      // eslint-disable-next-line
+      handler: function(val) {
+        this.refreshAll();
+      }
+    },
     // eslint-disable-next-line
     isStart: function(val) {
       this.refreshAll();
@@ -299,12 +315,24 @@ export default {
         left: ((this.centeredX || this.x) * this.options.scale) + 'px', // remove: this.options.offsetLeft + 
         transform: `scale(${this.options.scale})`,
       }
+    },
+    nodePortStyle() {
+      return {
+        marginTop: this.additionalHeight + 'px'
+      }
     }
   },
   methods: {
+    refreshNodes() {
+      const startElement = document.getElementsByClassName('node-start')[0];
+      const configElement = document.getElementsByClassName('node-config-button')[0];
+
+      this.additionalHeight = ((this.isStart && startElement ? startElement.offsetHeight : 0) - (this.options.selected === this.id && !this.options.moving && !this.isLocked && configElement ? configElement.offsetHeight : 0)) / 2; 
+    },
     refreshAll() {
       this.$emit('updateLines', {});
       this.refreshButtons();
+      this.refreshNodes();
     },
     delay() {
       setTimeout(() => {
@@ -335,7 +363,6 @@ export default {
         additionalHeight += nodeStartTitleElement ? nodeStartTitleElement.offsetHeight : 0;
       }
       buttonHeight += additionalHeight;
-
 
       // calculate each port position
       for (let i = 0; i < buttons.length; i++) {
@@ -445,8 +472,10 @@ export default {
       return height;
     },
     outputMouseDown(e) {
-      this.linkingStart = true;
-      e.preventDefault();
+      if (!this.isLocked) {
+        this.linkingStart = true;
+        e.preventDefault();
+      }
     },
     // eslint-disable-next-line
     outputMouseMove(e) {
@@ -564,17 +593,6 @@ $portSize: 16;
     &:hover {
       background: $themeColor;
       border: 1px solid $themeColor;
-    }
-    &.node-port-start {
-      margin-top: 17px;
-      top: 50%;
-      transform: translateY(-50%);
-    }
-    &.editing {
-      margin-top: -22px;
-    }
-    &.editing-start {
-      margin-top: -5px;
     }
   }
   .node-input {
