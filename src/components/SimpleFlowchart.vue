@@ -22,6 +22,7 @@
           <flowchart-node
             v-bind.sync="node"
             :showDrawer.sync="showDrawer"
+            :isLocked.sync="updateLine.lockedNodes[index]"
             @addingButtons="addingButtons(node.id, $event)"
             :startNodeTitle.sync="scene.startNodeTitle"  
             v-for="(node, index) in scene.nodes"
@@ -34,7 +35,8 @@
             @updateButtonText="updateButtonText(node.id, $event)"
             @deleteButtonNode="deleteButtonNode(node.id, $event)"
             @nodeDelete="nodeDelete(node.id)"
-            :foundIsStart="foundIsStart">
+            :foundIsStart="foundIsStart"
+          >
           </flowchart-node>
           <svg width="100%" :height="`${height}px`">
             <flowchart-link v-bind.sync="link"
@@ -116,11 +118,12 @@ export default {
       draggingNodeTop: 0,
       draggingNodeLeft: 0,
       actionType: '',
-      updateLineStatus: {
+      updateLine: {
         status: false,
         toNodeId: null,
         buttonHeight: null,
-        buttonsLength: null
+        buttonsLength: null,
+        lockedNodes: []
       }
     };
   },
@@ -144,9 +147,32 @@ export default {
       return Boolean(this.scene.nodes.find((node) => node.isStart));
     }
   },
+  watch: {
+    'scene.nodes': {
+      handler: function(val, old) {
+        if (val.length < old.length) { // deleted condition
+          let deletedIndex = null;
+          let found = null;
+
+          old.forEach((item, index) => {
+            found = val.find((subitem) => subitem.id === item.id);
+
+            if (!found) {
+              deletedIndex = index;
+            }
+          })
+          this.updateLine.lockedNodes = this.updateLine.lockedNodes.filter((item, index) => index !== deletedIndex);
+        } else if (val.length > old.length) {
+          this.updateLine.lockedNodes = [...this.updateLine.lockedNodes, true];
+        }
+      },
+      deep: true
+    }
+  },
   mounted() {
     this.rootDivOffset.top = this.$el ? this.$el.offsetTop : 0;
     this.rootDivOffset.left = this.$el ? this.$el.offsetLeft : 0;
+    this.updateLine.lockedNodes = this.scene.nodes.map(() => true);
   },
   methods: {
     // eslint-disable-next-line
@@ -169,8 +195,10 @@ export default {
       this.$emit('buttonAdded', { nodeId, newButton });
     },
     updateLines(toNodeId, { buttonHeight, buttonsLength }) {
-      this.updateLineStatus = {
-        status: true,
+      // const foundIndex = this.scene.nodes.findIndex((node) => node.id === toNodeId);
+      
+      this.updateLine = {
+        ...this.updateLine,
         toNodeId,
         buttonHeight,
         buttonsLength
@@ -237,16 +265,15 @@ export default {
         posResult = this.getPortPosition(toNode, 'left', x, y);
         [ex, ey] = posResult;
 
-        if (this.updateLineStatus.status && this.updateLineStatus.toNodeId === link.to) {
-          if (this.updateLineStatus.buttonHeight) {
-            ey += this.updateLineStatus.buttonHeight / 2;
+        if (this.updateLine.toNodeId === link.to) {
+          if (this.updateLine.buttonHeight) {
+            ey += this.updateLine.buttonHeight / 2;
           }
 
-          let element = document.getElementById('button_' + toNode.id + '_' + (this.updateLineStatus.buttonsLength - 1));
-          if ((this.updateLineStatus.buttonHeight >= 0 && element) || (this.updateLineStatus.buttonHeight < 0 && !element)) {
-            this.updateLineStatus = {
-              status: false,
-              toNodeId: null,
+          let element = document.getElementById('button_' + toNode.id + '_' + (this.updateLine.buttonsLength - 1));
+          if ((this.updateLine.buttonHeight >= 0 && element) || (this.updateLine.buttonHeight < 0 && !element)) {
+            this.updateLine = {
+              ...this.updateLine,
               buttonHeight: null,
               buttonsLength: null
             }
@@ -300,14 +327,15 @@ export default {
 
       if (type === 'right') {
         let buttonIndex = null;
+        const index = this.scene.nodes.findIndex((nodeitem) => nodeitem.id === node.id);
 
-        if (buttonId && buttonId !== -1) {
+        if (buttonId && buttonId !== -1 && !this.updateLine.lockedNodes[index]) {
           buttonIndex = node.buttons.findIndex((button) => button.id === buttonId);
           if (buttonIndex < 0) {
             return null;
           }
         } else {
-          if (buttonId === -1 && this.draggingLink && this.draggingLink.buttonIndex !== undefined) { // this line is important! -1 means the condition is in dragginglink
+          if (buttonId === -1 && this.draggingLink && this.draggingLink.buttonIndex !== undefined && !this.updateLine.lockedNodes[index]) { // this line is important! -1 means the condition is in dragginglink
             buttonIndex = this.draggingLink.buttonIndex;
             // console.log({selected: this.draggingLink})
             // console.log({node, buttons: node.buttons})
