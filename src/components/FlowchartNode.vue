@@ -466,9 +466,9 @@ export default {
         text.innerHTML = btnText;
         fakeBtn.appendChild(text);
       }
-      document.getElementById('app').appendChild(fakeBtn);
+      document.getElementById('conversation-flow').appendChild(fakeBtn);
       const height = fakeBtn.offsetHeight;
-      document.getElementById('app').removeChild(fakeBtn);
+      document.getElementById('conversation-flow').removeChild(fakeBtn);
       return height;
     },
     outputMouseDown(e) {
