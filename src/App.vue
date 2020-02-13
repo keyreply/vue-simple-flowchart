@@ -86,6 +86,7 @@
 <script>
 /* eslint-disable */
 import SimpleFlowchart from './components/SimpleFlowchart.vue'
+import TempJSON from './temp.json'
 
 export default {
   name: 'app',
@@ -1394,8 +1395,12 @@ export default {
         ]
     }
 
-    // this.scene.nodes = temp.nodes;
-    // this.scene.links = temp.links;
+    const temp2 = TempJSON
+    
+
+    this.scene.nodes = temp2.nodes;
+    this.scene.links = temp2.links;
+    // this.scene.links = [];
     // this.scene.links = temp.links.filter((link) => Boolean(temp.nodes.find((node) => node.id === link.to)));
     // console.log('FILTER LINKS', temp.links.filter((link) => Boolean(temp.nodes.find((node) => node.id === link.to))).length);
     // console.log({temp, scene: this.scene})
