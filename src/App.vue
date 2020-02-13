@@ -1399,7 +1399,8 @@ export default {
     
 
     this.scene.nodes = temp2.nodes;
-    this.scene.links = [];
+    this.scene.links = temp2.links;
+    // this.scene.links = [];
     // this.scene.links = temp.links.filter((link) => Boolean(temp.nodes.find((node) => node.id === link.to)));
     // console.log('FILTER LINKS', temp.links.filter((link) => Boolean(temp.nodes.find((node) => node.id === link.to))).length);
     // console.log({temp, scene: this.scene})
