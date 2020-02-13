@@ -1,9 +1,11 @@
 <template>
+<div>
   <div class="flowchart-node" :style="nodeStyle" 
     @mousedown="handleMousedown"
     @mouseover="handleMouseOver"
     @mouseleave="handleMouseLeave"
     :class="{selected: options.selected === id}"
+    ref="flowchartNode"
   >
     <div
       class="node-port node-input"
@@ -125,6 +127,7 @@
     </div>
     <div v-show="show.delete" class="node-delete">&times;</div>
   </div>
+  </div>
 </template>
 
 <script>
@@ -223,6 +226,12 @@ export default {
       default() {
         return [];
       }
+    },
+    container: {
+      type: Object,
+      default() {
+        return {};
+      }
     }
   },
   data() {
@@ -260,8 +269,8 @@ export default {
     this.refreshButtons();
   },
   mounted() {
-    this.refreshButtons();
-    this.refreshNodes();
+     this.refreshButtons();
+        this.refreshNodes();
   },
   watch: {
     buttons: {

@@ -1,6 +1,6 @@
 <template>
   <div @mouseup="itemRelease" @mousemove="itemMove">
-    <div id="flowchart" class="flowchart"   @dragstart="onDragStart">
+    <div id="flowchart" class="flowchart"  @dragstart="onDragStart">
       <div id="toolbar" class="flowchart-toolbar">
         <div class="flowchart-toolbar-item" @mousedown="(e) => itemClick(e, 'Rule')">
           <div class="square" />
@@ -11,7 +11,7 @@
           <span>Action</span>
         </div>
       </div>
-      <v-touch class="flowchart-container"
+      <v-touch ref="flowchartContainer" class="flowchart-container"
         @tap="vtouch"
       >
         <div 
@@ -25,7 +25,7 @@
             :isLocked.sync="updateLine.lockedNodes[index]"
             @addingButtons="addingButtons(node.id, $event)"
             :startNodeTitle.sync="scene.startNodeTitle"  
-            v-for="(node, index) in scene.nodes"
+            v-for="(node, index) in shownNodes"
             :key="`node${index}`"
             :options="nodeOptions"
             @linkingStart="linkingStart(node.id, $event)"
@@ -36,6 +36,7 @@
             @deleteButtonNode="deleteButtonNode(node.id, $event)"
             @nodeDelete="nodeDelete(node.id)"
             :foundIsStart="foundIsStart"
+            :container="$refs.flowchartContainer"
           >
           </flowchart-node>
           <svg width="100%" :height="`${height}px`">
@@ -73,6 +74,7 @@ export default {
           centerY: 0,
           nodes: [],
           links: [],
+          shownNodes: []
         }
       }
     },
@@ -124,7 +126,8 @@ export default {
         buttonHeight: null,
         buttonsLength: null,
         lockedNodes: []
-      }
+      },
+      shownNodes: []
     };
   },
   components: {
@@ -144,7 +147,7 @@ export default {
       }
     },
     foundIsStart() {
-      return Boolean(this.scene.nodes.find((node) => node.isStart));
+      return Boolean(this.shownNodes.find((node) => node.isStart));
     }
   },
   watch: {
@@ -165,16 +168,29 @@ export default {
         } else if (val.length > old.length) {
           this.updateLine.lockedNodes = [...this.updateLine.lockedNodes, true];
         }
+        this.filterShownNodes();
       },
       deep: true
     }
   },
   mounted() {
+    this.filterShownNodes();
     this.rootDivOffset.top = this.$el ? this.$el.offsetTop : 0;
     this.rootDivOffset.left = this.$el ? this.$el.offsetLeft : 0;
-    this.updateLine.lockedNodes = this.scene.nodes.map(() => true);
+    this.updateLine.lockedNodes = this.shownNodes.map(() => false);
   },
   methods: {
+    filterShownNodes() {
+      const container = this.$refs.flowchartContainer;
+      const containerHeight = container ? (container.$el ? container.$el.clientHeight : 0) : 0;
+      const containerWidth = container ? (container.$el ? container.$el.clientWidth : 0) : 0;
+
+      const shownNodes = this.scene.nodes.filter(p => {
+        return (p.centeredX || p.x) > -100 && (p.centeredY || p.y) > -100 && (p.centeredX || p.x) < containerWidth + 100 && (p.centeredY || p.y) < containerHeight + 100 && containerHeight && containerWidth
+      });
+      
+      this.shownNodes = shownNodes;
+    },
     // eslint-disable-next-line
     vtouch(e) {
       // console.log({e});
@@ -512,12 +528,12 @@ export default {
       this.$emit('canvasClick', e);
     },
     moveSelectedNode(dx, dy) {
-      let index = this.scene.nodes.findIndex((item) => {
+      let index = this.shownNodes.findIndex((item) => {
         return item.id === this.action.dragging
       })
-      let left = (this.scene.nodes[index].centeredX || this.scene.nodes[index].x) + dx / this.scene.scale;
-      let top = (this.scene.nodes[index].centeredY || this.scene.nodes[index].y) + dy / this.scene.scale;
-      this.$set(this.scene.nodes, index, Object.assign(this.scene.nodes[index], {
+      let left = (this.shownNodes[index].centeredX || this.shownNodes[index].x) + dx / this.scene.scale;
+      let top = (this.shownNodes[index].centeredY || this.shownNodes[index].y) + dy / this.scene.scale;
+      this.$set(this.shownNodes, index, Object.assign(this.shownNodes[index], {
         x: left,
         y: top,
         centeredX: left,
@@ -525,7 +541,7 @@ export default {
       }));
     },
     nodeDelete(id) {
-      this.scene.nodes = this.scene.nodes.filter((node) => {
+      this.shownNodes = this.shownNodes.filter((node) => {
         return node.id !== id;
       })
       this.scene.links = this.scene.links.filter((link) => {
