@@ -40,11 +40,11 @@
           >
           </flowchart-node>
           <svg width="100%" :height="`${height}px`">
-            <flowchart-link v-bind.sync="link"
-              v-for="(link, index) in lines()"
-              :key="`link${index}`"
-              @deleteLink="linkDelete(link.id)">
-            </flowchart-link>
+              <flowchart-link v-bind.sync="link"
+                v-for="(link, index) in shownLinks"
+                :key="`link${index}`"
+                @deleteLink="linkDelete(link.id)">
+              </flowchart-link>
           </svg>
         </div>
       </v-touch>
@@ -127,7 +127,9 @@ export default {
         buttonsLength: null,
         lockedNodes: []
       },
-      shownNodes: []
+      shownNodes: [],
+      shownLinks: [],
+      canvasMoving: false
     };
   },
   components: {
@@ -175,11 +177,111 @@ export default {
   },
   mounted() {
     this.filterShownNodes();
+    this.getLinks();
     this.rootDivOffset.top = this.$el ? this.$el.offsetTop : 0;
     this.rootDivOffset.left = this.$el ? this.$el.offsetLeft : 0;
-    this.updateLine.lockedNodes = this.shownNodes.map(() => false);
+    this.updateLine.lockedNodes = this.shownNodes.map(() => true);
   },
   methods: {
+    getLinks() {
+      const container = this.$refs.flowchartContainer;
+      const containerHeight = container ? (container.$el ? container.$el.clientHeight : 0) : 0;
+      const containerWidth = container ? (container.$el ? container.$el.clientWidth : 0) : 0;
+
+      let lines = this.scene.links.map((link) => {
+        const fromNode = this.findNodeWithID(link.from)
+        const toNode = this.findNodeWithID(link.to)
+        let x, y, cy, cx, ex, ey;
+        let posResult;
+
+        // console.log({ fromNode, toNode });
+        if (!fromNode || !toNode) {
+          const error = {
+            message: 'one of nodes not existed!',
+            detail: {
+              link,
+              fromNode: fromNode || 'not defined',
+              toNode: toNode || 'not defined'
+            }
+          }
+
+          this.$emit('addErrors', error);
+
+          return null;
+        }
+
+        x = this.scene.centerX + (fromNode.centeredX || fromNode.x);
+        y = this.scene.centerY + (fromNode.centeredY || fromNode.y);
+        posResult = this.getPortPosition(fromNode, 'right', x, y, link.button);
+        if (!posResult) {
+          const error = {
+            message: 'not able positioning node buttons, button not exist!',
+            detail: {
+              link,
+              fromNode,
+              buttons: fromNode.buttons
+            }
+          }
+
+          // this.$emit('addErrors', error);
+
+          return null;
+        } 
+        [cx, cy] = posResult;
+
+        x = this.scene.centerX + (toNode.centeredX || toNode.x);
+        y = this.scene.centerY + (toNode.centeredY || toNode.y);
+        posResult = this.getPortPosition(toNode, 'left', x, y);
+        [ex, ey] = posResult;
+
+        if (this.updateLine.toNodeId === link.to) {
+          if (this.updateLine.buttonHeight) {
+            ey += this.updateLine.buttonHeight / 2;
+          }
+
+          let element = document.getElementById('button_' + toNode.id + '_' + (this.updateLine.buttonsLength - 1));
+          if ((this.updateLine.buttonHeight >= 0 && element) || (this.updateLine.buttonHeight < 0 && !element)) {
+            this.updateLine = {
+              ...this.updateLine,
+              buttonHeight: null,
+              buttonsLength: null
+            }
+          }
+        }
+
+      // filter onscreen lines based on position
+      const isOnscreen = ((cx > -100 && cy > -100 && cx < containerWidth + 100 && cy < containerHeight + 100)
+        || (ex > -100 && ey > -100 && ex < containerWidth + 100 && ey < containerHeight + 100))
+        && containerHeight && containerWidth
+      
+      if(!isOnscreen) {
+        return null;
+      }
+
+        return { 
+          start: [cx, cy], 
+          end: [ex, ey],
+          id: link.id,
+        };
+      })
+      
+      lines = lines.filter((line) => line);
+
+      if (this.draggingLink) {
+        let x, y, cy, cx;
+        const fromNode = this.findNodeWithID(this.draggingLink.from);
+        x = this.scene.centerX + (fromNode.centeredX || fromNode.x);
+        y = this.scene.centerY + (fromNode.centeredY || fromNode.y);
+        [cx, cy] = this.getPortPosition(fromNode, 'right', x, y, -1);
+        // push temp dragging link, mouse cursor postion = link end postion 
+        lines.push({ 
+          start: [cx, cy],
+          end: [this.draggingLink.mx, this.draggingLink.my],
+        })
+      }
+
+      this.shownLinks = lines;
+    },
     filterShownNodes() {
       const container = this.$refs.flowchartContainer;
       const containerHeight = container ? (container.$el ? container.$el.clientHeight : 0) : 0;
@@ -234,91 +336,6 @@ export default {
       this.scene.links = this.scene.links.filter((link) => link.from !== nodeId || link.button !== buttonId);
       this.$emit('buttonDeleted', { nodeId, deletedButton });
     },
-    lines() {
-      let lines = this.scene.links.map((link) => {
-        const fromNode = this.findNodeWithID(link.from)
-        const toNode = this.findNodeWithID(link.to)
-        let x, y, cy, cx, ex, ey;
-        let posResult;
-
-        // console.log({ fromNode, toNode });
-        if (!fromNode || !toNode) {
-          const error = {
-            message: 'one of nodes not existed!',
-            detail: {
-              link,
-              fromNode: fromNode || 'not defined',
-              toNode: toNode || 'not defined'
-            }
-          }
-
-          this.$emit('addErrors', error);
-
-          return null;
-        }
-
-        x = this.scene.centerX + (fromNode.centeredX || fromNode.x);
-        y = this.scene.centerY + (fromNode.centeredY || fromNode.y);
-        posResult = this.getPortPosition(fromNode, 'right', x, y, link.button);
-        if (!posResult) {
-          const error = {
-            message: 'not able positioning node buttons, button not exist!',
-            detail: {
-              link,
-              fromNode,
-              buttons: fromNode.buttons
-            }
-          }
-
-          this.$emit('addErrors', error);
-
-          return null;
-        } 
-        [cx, cy] = posResult;
-
-        x = this.scene.centerX + (toNode.centeredX || toNode.x);
-        y = this.scene.centerY + (toNode.centeredY || toNode.y);
-        posResult = this.getPortPosition(toNode, 'left', x, y);
-        [ex, ey] = posResult;
-
-        if (this.updateLine.toNodeId === link.to) {
-          if (this.updateLine.buttonHeight) {
-            ey += this.updateLine.buttonHeight / 2;
-          }
-
-          let element = document.getElementById('button_' + toNode.id + '_' + (this.updateLine.buttonsLength - 1));
-          if ((this.updateLine.buttonHeight >= 0 && element) || (this.updateLine.buttonHeight < 0 && !element)) {
-            this.updateLine = {
-              ...this.updateLine,
-              buttonHeight: null,
-              buttonsLength: null
-            }
-          }
-        }
-
-        return { 
-          start: [cx, cy], 
-          end: [ex, ey],
-          id: link.id,
-        };
-      })
-      
-      lines = lines.filter((line) => line);
-
-      if (this.draggingLink) {
-        let x, y, cy, cx;
-        const fromNode = this.findNodeWithID(this.draggingLink.from);
-        x = this.scene.centerX + (fromNode.centeredX || fromNode.x);
-        y = this.scene.centerY + (fromNode.centeredY || fromNode.y);
-        [cx, cy] = this.getPortPosition(fromNode, 'right', x, y, -1);
-        // push temp dragging link, mouse cursor postion = link end postion 
-        lines.push({ 
-          start: [cx, cy],
-          end: [this.draggingLink.mx, this.draggingLink.my],
-        })
-      }
-      return lines;
-    },
     findNodeWithID(id) {
       return this.scene.nodes.find((item) => {
         return id === item.id
@@ -362,10 +379,10 @@ export default {
         }
 
         const nodeTypeElement = document.getElementById(`node-type_${node.id}`);
-        if (!nodeTypeElement) { return [0, 0]; }
+        if (!nodeTypeElement) { return null; }
 
         const labelTitleElement = document.getElementById(`label-title_${node.id}`);
-        if (!labelTitleElement) { return [0, 0]; }
+        if (!labelTitleElement) { return null; }
 
         // if (nodeTypeElement && labelTitleElement) {
         //   console.log({nodeTypeElement, labelTitleElement})
@@ -561,6 +578,7 @@ export default {
       return false;
     },
     itemMove(e) {
+      this.canvasMoving = true;
       if(this.moving) {
         [this.mouse.x, this.mouse.y] = getMousePosition(this.$el, e);
 
@@ -591,6 +609,10 @@ export default {
 
       this.$emit('onDropNewNode', { x, y, nodeType : this.actionType, label: 'New Rule' });
       }
+
+      // refresh lines
+      this.canvasMoving = false;
+      this.getLinks();
     }
   },
 }
