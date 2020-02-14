@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="conversation-flow">
     <div id="title">
       <div id="notification">
         <el-alert
@@ -89,7 +89,7 @@ import SimpleFlowchart from './components/SimpleFlowchart.vue'
 import TempJSON from './temp.json'
 
 export default {
-  name: 'app',
+  name: 'conversation-flow',
   components: {
     SimpleFlowchart
   },
@@ -1423,20 +1423,20 @@ export default {
       }
     },
     notificationUp(title, type, auto) {
-      const id = Math.max(0, ...this.notifications.map((item) => item.id)) + 1;
-      const notification = {
-        id,
-        status: true,
-        title,
-        type,
-        auto
-      }
+      // const id = Math.max(0, ...this.notifications.map((item) => item.id)) + 1;
+      // const notification = {
+      //   id,
+      //   status: true,
+      //   title,
+      //   type,
+      //   auto
+      // }
       
-      this.notifications.unshift(notification);
+      // this.notifications.unshift(notification);
 
-      if (this.notifications[0].auto) {
-        this.notificationDown(id);
-      }
+      // if (this.notifications[0].auto) {
+      //   this.notificationDown(id);
+      // }
     },
     notificationDown(id) {
       setTimeout(() => {
@@ -1515,7 +1515,7 @@ export default {
 </script>
 
 <style lang="scss">
-#app {
+#conversation-flow {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

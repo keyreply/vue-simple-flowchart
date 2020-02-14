@@ -400,7 +400,7 @@ export default {
             // console.log({node, buttons: node.buttons})
             // return [x + labelWidth, y + labelHeight + 41 * (buttonIndex + 0.5 - node.buttons.length)]
           } else {
-            return [x + labelWidth, y + labelHeight / 2 + additionalHeight / 2];
+            return [x + labelWidth, y + (labelHeight / 2) + (additionalHeight / 2)];
           }
         }
 
@@ -436,7 +436,7 @@ export default {
         }
 
         buttonHeight += additionalHeight;
-        return [x + labelWidth, y + buttonHeight];
+        return [x + labelWidth, y + (buttonHeight/2)];
       } else if (type === "left") {
         return [x, y + labelHeight / 2 + additionalHeight / 2];
       }

@@ -24,7 +24,7 @@
           <el-select v-if="editing.type" :value="type" @input="$emit('update:type', nodeCategory[$event])" >
             <el-option v-for="(item, index) in nodeCategory" :key="index" :value="index">{{item}}</el-option>
           </el-select>
-          <span v-else style="flex-grow: 1">{{type}}</span>
+          <span class="node-type-text" v-else style="flex-grow: 1;">{{id}}</span>
           <el-popover
             placement="right-start"
             width="200"
@@ -565,9 +565,12 @@ $portSize: 16;
       border-bottom-left-radius: 0px;
       border-bottom-right-radius: 0px;
       color: black;
-      font-size: 16px;
+      font-size: 14px;
       font-weight: 600;
       padding: 6px;
+      .node-type-text{
+        max-width: 100%;
+      }
     }
     .node-label {
       font-size: 14px;
