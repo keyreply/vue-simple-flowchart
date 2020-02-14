@@ -569,7 +569,11 @@ $portSize: 16;
       font-weight: 600;
       padding: 6px;
       .node-type-text{
-        max-width: 100%;
+        max-width: 165px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-left: 5px;
+        margin-right: 5px;
       }
     }
     .node-label {
@@ -581,6 +585,12 @@ $portSize: 16;
         border-radius: 4px;
         background: #FFF;
         padding: 16px;
+        >span{
+          max-width: 100%;
+          overflow: hidden;
+          display: block;
+          text-overflow: ellipsis;
+        }
       }
       .node-label-button{
         border: 1px solid #dfdfdf;
