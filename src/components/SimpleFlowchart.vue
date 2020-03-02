@@ -7,20 +7,14 @@
           <span>Content</span>
         </div>
       </div>
-      <v-touch ref="flowchartContainer" class="flowchart-container"
-        @tap="vtouch"
-      >
-        <div 
-          @mousemove="handleMove" 
-          @mouseup="handleUp"
-          @mousedown="handleDown"
-        >
+      <div ref="flowchartContainer" class="flowchart-container" @tap="vtouch">
+        <div @mousemove="handleMove" @mouseup="handleUp" @mousedown="handleDown">
           <flowchart-node
             v-bind.sync="node"
             :showDrawer.sync="showDrawer"
             :isLocked.sync="updateLine.lockedNodes[index]"
             @addingButtons="addingButtons(node.id, $event)"
-            :startNodeTitle.sync="scene.startNodeTitle"  
+            :startNodeTitle.sync="scene.startNodeTitle"
             v-for="(node, index) in shownNodes"
             :key="`node${index}`"
             :options="nodeOptions"
@@ -33,17 +27,17 @@
             @nodeDelete="nodeDelete(node.id)"
             :foundIsStart="foundIsStart"
             :container="$refs.flowchartContainer"
-          >
-          </flowchart-node>
+          ></flowchart-node>
           <svg width="100%" :height="`${height}px`">
-              <flowchart-link v-bind.sync="link"
-                v-for="(link, index) in shownLinks"
-                :key="`link${index}`"
-                @deleteLink="linkDelete(link.id)">
-              </flowchart-link>
+            <flowchart-link
+              v-bind.sync="link"
+              v-for="(link, index) in shownLinks"
+              :key="`link${index}`"
+              @deleteLink="linkDelete(link.id)"
+            />
           </svg>
         </div>
-      </v-touch>
+      </div>
       <div
         class="dragging-node"
         v-if="moving"
@@ -75,7 +69,7 @@ export default {
           nodes: [],
           links: [],
           shownNodes: []
-        }
+        };
       }
     },
     height: {
@@ -188,12 +182,24 @@ export default {
   methods: {
     getLinks() {
       const container = this.$refs.flowchartContainer;
-      const containerHeight = container ? (container.$el ? container.$el.clientHeight : 0) : 0;
-      const containerWidth = container ? (container.$el ? container.$el.clientWidth : 0) : 0;
+      const containerHeight = container
+        ? container.$el
+          ? container.$el.clientHeight
+          : container.clientHeight
+          ? container.clientHeight
+          : 0
+        : 0;
+      const containerWidth = container
+        ? container.$el
+          ? container.$el.clientWidth
+          : container.clientWidth
+          ? container.clientWidth
+          : 0
+        : 0;
 
-      let lines = this.scene.links.map((link) => {
-        const fromNode = this.findNodeWithID(link.from)
-        const toNode = this.findNodeWithID(link.to)
+      let lines = this.scene.links.map(link => {
+        const fromNode = this.findNodeWithID(link.from);
+        const toNode = this.findNodeWithID(link.to);
         let x, y, cy, cx, ex, ey;
         let posResult;
 
@@ -257,17 +263,25 @@ export default {
           }
         }
 
-      // filter onscreen lines based on position
-      const isOnscreen = ((cx > -100 && cy > -100 && cx < containerWidth + 100 && cy < containerHeight + 100)
-        || (ex > -100 && ey > -100 && ex < containerWidth + 100 && ey < containerHeight + 100))
-        && containerHeight && containerWidth
-      
-      if(!isOnscreen) {
-        return null;
-      }
+        // filter onscreen lines based on position
+        const isOnscreen =
+          ((cx > -100 &&
+            cy > -100 &&
+            cx < containerWidth + 100 &&
+            cy < containerHeight + 100) ||
+            (ex > -100 &&
+              ey > -100 &&
+              ex < containerWidth + 100 &&
+              ey < containerHeight + 100)) &&
+          containerHeight &&
+          containerWidth;
 
-        return { 
-          start: [cx, cy], 
+        if (!isOnscreen) {
+          return null;
+        }
+
+        return {
+          start: [cx, cy],
           end: [ex, ey],
           id: link.id
         };
@@ -292,13 +306,32 @@ export default {
     },
     filterShownNodes() {
       const container = this.$refs.flowchartContainer;
-      const containerHeight = container ? (container.$el ? container.$el.clientHeight : 0) : 0;
-      const containerWidth = container ? (container.$el ? container.$el.clientWidth : 0) : 0;
+      const containerHeight = container
+        ? container.$el
+          ? container.$el.clientHeight
+          : container.clientHeight
+          ? container.clientHeight
+          : 0
+        : 0;
+      const containerWidth = container
+        ? container.$el
+          ? container.$el.clientWidth
+          : container.clientWidth
+          ? container.clientWidth
+          : 0
+        : 0;
 
       const shownNodes = this.scene.nodes.filter(p => {
-        return (p.centeredX || p.x) > -100 && (p.centeredY || p.y) > -100 && (p.centeredX || p.x) < containerWidth + 100 && (p.centeredY || p.y) < containerHeight + 100 && containerHeight && containerWidth
+        return (
+          (p.centeredX || p.x) > -100 &&
+          (p.centeredY || p.y) > -100 &&
+          (p.centeredX || p.x) < containerWidth + 100 &&
+          (p.centeredY || p.y) < containerHeight + 100 &&
+          containerHeight &&
+          containerWidth
+        );
       });
-      
+
       this.shownNodes = shownNodes;
     },
     // eslint-disable-next-line
@@ -311,38 +344,44 @@ export default {
       if (!node.buttons || !node.buttons.length) {
         node.buttons = [];
         if (newButton) {
-          this.scene.links = this.scene.links.filter((link) => link.from !== nodeId);
+          this.scene.links = this.scene.links.filter(
+            link => link.from !== nodeId
+          );
         }
       }
       if (newButton) {
         // node.buttons.push(newButton);
-        node.buttons = [...node.buttons, newButton]
+        node.buttons = [...node.buttons, newButton];
       }
-      this.$emit('buttonAdded', { nodeId, newButton });
+      this.$emit("buttonAdded", { nodeId, newButton });
     },
     updateLines(toNodeId, { buttonHeight, buttonsLength }) {
       // const foundIndex = this.scene.nodes.findIndex((node) => node.id === toNodeId);
-      
+
       this.updateLine = {
         ...this.updateLine,
         toNodeId,
         buttonHeight,
         buttonsLength
-      }
+      };
     },
     updateButtonText(nodeId, { buttonId, text }) {
-      const updatedButton = this.findNodeWithID(nodeId).buttons.find((button) => button.id === buttonId);
+      const updatedButton = this.findNodeWithID(nodeId).buttons.find(
+        button => button.id === buttonId
+      );
 
       updatedButton.text = text;
-      this.$emit('buttonUpdated', { nodeId, updatedButton });
+      this.$emit("buttonUpdated", { nodeId, updatedButton });
     },
     deleteButtonNode(nodeId, buttonId) {
       const node = this.findNodeWithID(nodeId);
-      const deletedButton = node.buttons.find((button) => button.id === buttonId);
+      const deletedButton = node.buttons.find(button => button.id === buttonId);
 
-      node.buttons = node.buttons.filter((button) => button.id !== buttonId);
-      this.scene.links = this.scene.links.filter((link) => link.from !== nodeId || link.button !== buttonId);
-      this.$emit('buttonDeleted', { nodeId, deletedButton });
+      node.buttons = node.buttons.filter(button => button.id !== buttonId);
+      this.scene.links = this.scene.links.filter(
+        link => link.from !== nodeId || link.button !== buttonId
+      );
+      this.$emit("buttonDeleted", { nodeId, deletedButton });
     },
     findNodeWithID(id) {
       return this.scene.nodes.find(item => {
@@ -405,10 +444,16 @@ export default {
         }
 
         const nodeTypeElement = document.getElementById(`node-type_${node.id}`);
-        if (!nodeTypeElement) { return null; }
+        if (!nodeTypeElement) {
+          return null;
+        }
 
-        const labelTitleElement = document.getElementById(`label-title_${node.id}`);
-        if (!labelTitleElement) { return null; }
+        const labelTitleElement = document.getElementById(
+          `label-title_${node.id}`
+        );
+        if (!labelTitleElement) {
+          return null;
+        }
 
         // if (nodeTypeElement && labelTitleElement) {
         //   console.log({nodeTypeElement, labelTitleElement})
@@ -606,20 +651,28 @@ export default {
       this.$emit("canvasClick", e);
     },
     moveSelectedNode(dx, dy) {
-      let index = this.shownNodes.findIndex((item) => {
-        return item.id === this.action.dragging
-      })
-      let left = (this.shownNodes[index].centeredX || this.shownNodes[index].x) + dx / this.scene.scale;
-      let top = (this.shownNodes[index].centeredY || this.shownNodes[index].y) + dy / this.scene.scale;
-      this.$set(this.shownNodes, index, Object.assign(this.shownNodes[index], {
-        x: left,
-        y: top,
-        centeredX: left,
-        centeredY: top
-      }));
+      let index = this.shownNodes.findIndex(item => {
+        return item.id === this.action.dragging;
+      });
+      let left =
+        (this.shownNodes[index].centeredX || this.shownNodes[index].x) +
+        dx / this.scene.scale;
+      let top =
+        (this.shownNodes[index].centeredY || this.shownNodes[index].y) +
+        dy / this.scene.scale;
+      this.$set(
+        this.shownNodes,
+        index,
+        Object.assign(this.shownNodes[index], {
+          x: left,
+          y: top,
+          centeredX: left,
+          centeredY: top
+        })
+      );
     },
     nodeDelete(id) {
-      this.shownNodes = this.shownNodes.filter((node) => {
+      this.shownNodes = this.shownNodes.filter(node => {
         return node.id !== id;
       });
       this.scene.links = this.scene.links.filter(link => {
@@ -640,7 +693,7 @@ export default {
     },
     itemMove(e) {
       this.canvasMoving = true;
-      if(this.moving) {
+      if (this.moving) {
         [this.mouse.x, this.mouse.y] = getMousePosition(this.$el, e);
 
         const canvas = document.getElementById("flowchart");
