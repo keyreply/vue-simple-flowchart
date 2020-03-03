@@ -7,7 +7,12 @@
           <span>Content</span>
         </div>
       </div>
-      <div ref="flowchartContainer" class="flowchart-container" @tap="vtouch">
+      <div
+        ref="flowchartContainer"
+        class="flowchart-container"
+        id="flowchart-container"
+        @tap="vtouch"
+      >
         <div @mousemove="handleMove" @mouseup="handleUp" @mousedown="handleDown">
           <flowchart-node
             v-bind.sync="node"
@@ -26,7 +31,6 @@
             @deleteButtonNode="deleteButtonNode(node.id, $event)"
             @nodeDelete="nodeDelete(node.id)"
             :foundIsStart="foundIsStart"
-            :container="$refs.flowchartContainer"
           ></flowchart-node>
           <svg width="100%" :height="`${height}px`">
             <flowchart-link
@@ -174,10 +178,12 @@ export default {
   },
   mounted() {
     this.filterShownNodes();
-    this.getLinks();
     this.rootDivOffset.top = this.$el ? this.$el.offsetTop : 0;
     this.rootDivOffset.left = this.$el ? this.$el.offsetLeft : 0;
     this.updateLine.lockedNodes = this.shownNodes.map(() => true);
+    this.$nextTick(() => {
+      this.getLinks();
+    });
   },
   methods: {
     getLinks() {
@@ -264,7 +270,7 @@ export default {
         }
 
         // filter onscreen lines based on position
-        const isOnscreen =
+        const isOnscreen = !!(
           ((cx > -100 &&
             cy > -100 &&
             cx < containerWidth + 100 &&
@@ -274,7 +280,8 @@ export default {
               ex < containerWidth + 100 &&
               ey < containerHeight + 100)) &&
           containerHeight &&
-          containerWidth;
+          containerWidth
+        );
 
         if (!isOnscreen) {
           return null;
@@ -333,6 +340,7 @@ export default {
       });
 
       this.shownNodes = shownNodes;
+      this.getLinks();
     },
     // eslint-disable-next-line
     vtouch(e) {
@@ -566,7 +574,7 @@ export default {
       if (this.action.linking) {
         [this.mouse.x, this.mouse.y] = getMousePosition(this.$el, e);
 
-        const canvas = document.getElementById("flowchart-canvas");
+        const canvas = document.getElementById("flowchart-container");
         const bodyRect = document.body.getBoundingClientRect();
         const rect = canvas.getBoundingClientRect();
         const offsetTop = rect.top - bodyRect.top;
@@ -579,6 +587,7 @@ export default {
           this.mouse.x,
           this.mouse.y
         ];
+        this.getLinks();
       }
       if (this.action.dragging) {
         this.action.moving = true;

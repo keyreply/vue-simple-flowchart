@@ -226,12 +226,6 @@ export default {
       default() {
         return [];
       }
-    },
-    container: {
-      type: Object,
-      default() {
-        return {};
-      }
     }
   },
   data() {
