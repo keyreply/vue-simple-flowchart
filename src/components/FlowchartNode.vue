@@ -9,13 +9,13 @@
       :class="{selected: options.selected === id}"
       ref="flowchartNode"
     >
-      <div
-        class="node-port node-input"
-        :style="nodePortStyle"
-        @mousedown="inputMouseDown"
-        @mouseup="inputMouseUp"
-      />
       <div :id="'node-main_' + id" class="node-main">
+        <div
+          class="node-port node-input"
+          :style="nodePortStyle"
+          @mousedown="inputMouseDown"
+          @mouseup="inputMouseUp"
+        />
         <div v-if="isStart" :id="'node-main_' + id" class="node-start">
           <el-input
             v-if="editing.start"
@@ -194,17 +194,17 @@
             </div>
           </div>
         </div>
+        <div
+          v-if="buttons.length === 0 || !!isLocked"
+          :id="'node-output_' + id"
+          class="node-port node-output"
+          :style="nodePortStyle"
+          @mousedown="outputMouseDown"
+          @mousemove="outputMouseMove"
+          @mouseleave="outputMouseUp"
+          @mouseup="outputMouseUp"
+        />
       </div>
-      <div
-        v-if="buttons.length === 0 || !!isLocked"
-        :id="'node-output_' + id"
-        class="node-port node-output"
-        :style="nodePortStyle"
-        @mousedown="outputMouseDown"
-        @mousemove="outputMouseMove"
-        @mouseleave="outputMouseUp"
-        @mouseup="outputMouseUp"
-      />
       <div
         v-if="options.selected === id && !options.moving && !isLocked"
         :id="'add-button_' + id"
@@ -424,14 +424,7 @@ export default {
       )[0];
 
       this.additionalHeight =
-        ((this.isStart && startElement ? startElement.offsetHeight : 0) -
-          (this.options.selected === this.id &&
-          !this.options.moving &&
-          !this.isLocked &&
-          configElement
-            ? configElement.offsetHeight
-            : 0)) /
-        2;
+        this.isStart && startElement ? startElement.offsetHeight / 2 : 0;
     },
     refreshAll() {
       this.$emit("updateLines", {});
@@ -669,6 +662,7 @@ $portSize: 16;
   transform-origin: top left;
   z-index: 1;
   .node-main {
+    position: relative;
     text-align: center;
     .node-start {
       margin: 0 auto;
