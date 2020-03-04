@@ -372,6 +372,7 @@ export default {
         buttonHeight,
         buttonsLength
       };
+      this.getLinks();
     },
     updateButtonText(nodeId, { buttonId, text }) {
       const updatedButton = this.findNodeWithID(nodeId).buttons.find(

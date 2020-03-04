@@ -432,25 +432,22 @@ export default {
       this.refreshNodes();
     },
     delay() {
-      setTimeout(() => {
+      this.$nextTick(() => {
         this.editing.cache = !this.editing.cache;
-      }, 1);
+      });
     },
     refreshButtons() {
-      console.warn("this.buttons", this.buttons);
       const buttons = _.cloneDeep(this.buttons);
 
       this.styledButtons = _.cloneDeep(buttons);
 
       // calculate height of each element
       const nodeTypeElement = this.$refs.nodeType;
-      console.warn("nodeTypeElement", nodeTypeElement);
       if (!nodeTypeElement) {
         return;
       }
 
       const labelTitleElement = this.$refs.labelTitle;
-      console.warn("labelTitleElement", labelTitleElement);
       if (!labelTitleElement) {
         return;
       }
@@ -471,8 +468,6 @@ export default {
           : 0;
       }
       buttonHeight += additionalHeight;
-
-      console.warn("buttons", buttons);
 
       // calculate each port position
       for (let i = 0; i < buttons.length; i++) {
@@ -499,7 +494,6 @@ export default {
         //   console.log({ additionalHeight, nodeTypeHeight, labelTitleHeight })
         // }
         this.styledButtons = _.cloneDeep(buttons);
-        console.warn("this.styledButtons", this.styledButtons);
       }
     },
     buttonPortStyle(index) {
@@ -594,7 +588,6 @@ export default {
       fakeBtn.appendChild(fakeDiv);
       document.getElementById("flowchart-canvas").appendChild(fakeBtn);
       const height = fakeBtn.offsetHeight;
-      console.warn("fakeBtn.offsetHeight", fakeBtn.offsetHeight);
       document.getElementById("flowchart-canvas").removeChild(fakeBtn);
       return height;
     },
