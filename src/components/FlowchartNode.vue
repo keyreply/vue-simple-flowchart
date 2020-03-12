@@ -346,8 +346,8 @@ export default {
           // buttons: this.buttons.map(() => false)
         },
         cache: false
-      },
-      nodeCategory: ["Rule", "Action", "Script", "Decision", "Fork", "Join"]
+      }
+      // nodeCategory: ["Rule", "Action", "Script", "Decision", "Fork", "Join"]
     };
   },
   created() {
