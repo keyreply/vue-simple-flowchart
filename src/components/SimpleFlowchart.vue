@@ -340,7 +340,9 @@ export default {
       });
 
       this.shownNodes = shownNodes;
-      this.getLinks();
+      this.$nextTick(() => {
+        this.getLinks();
+      });
     },
     // eslint-disable-next-line
     vtouch(e) {
