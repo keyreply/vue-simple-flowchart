@@ -35,14 +35,15 @@
               circle
               @click="$emit('update:isLocked', !isLocked); delay()"
             ></el-button>
-            <el-select
+            <!-- <el-select
               v-if="editing.type"
               :value="type"
               @input="$emit('update:type', nodeCategory[$event])"
             >
               <el-option v-for="(item, index) in nodeCategory" :key="index" :value="index">{{item}}</el-option>
-            </el-select>
-            <span v-else style="flex-grow: 1">{{type}}</span>
+            </el-select>-->
+            <el-input v-if="editing.id" :value="id" @input="$emit('update:id', $event)" />
+            <span v-else style="flex-grow: 1">{{id}}</span>
             <el-popover placement="right-start" width="200" trigger="hover" title="Edit Menu">
               <div style="display: flex; flex-direction: column;">
                 <div style="display: flex;">
@@ -76,6 +77,14 @@
                       plain
                       @click="editing.start = !editing.start; delay()"
                     >Start Title</el-button>
+                  </div>
+                  <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                    <el-button
+                      :icon="editing.id ? 'el-icon-unlock' : 'el-icon-lock'"
+                      :type="editing.id ? 'primary' : 'text'"
+                      plain
+                      @click="editing.id = !editing.id; delay()"
+                    >Node ID</el-button>
                   </div>
                   <div style="display: flex; flex-direction: column; flex-grow: 1;">
                     <el-button
@@ -328,6 +337,7 @@ export default {
       },
       linkingStart: false,
       editing: {
+        id: false,
         start: false,
         type: false,
         label: false,
@@ -400,7 +410,8 @@ export default {
         this.editing.start ||
         this.editing.type ||
         this.editing.label ||
-        this.editing.options.value
+        this.editing.options.value ||
+        this.editing.id
       );
     },
     nodeStyle() {
