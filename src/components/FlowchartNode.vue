@@ -35,13 +35,19 @@
               circle
               @click="$emit('update:isLocked', !isLocked); delay()"
             ></el-button>
-            <el-select
+            <el-input
+              v-if="editing.type"
+              type="text"
+              :value="type"
+              @input="$emit('update:type', $event)"
+            />
+            <!-- <el-select
               v-if="editing.type"
               :value="type"
               @input="$emit('update:type', nodeCategory[$event])"
             >
               <el-option v-for="(item, index) in nodeCategory" :key="index" :value="index">{{item}}</el-option>
-            </el-select>
+            </el-select>-->
             <span v-else style="flex-grow: 1">{{type}}</span>
             <el-popover placement="right-start" width="200" trigger="hover" title="Edit Menu">
               <div style="display: flex; flex-direction: column;">
@@ -336,8 +342,8 @@ export default {
           // buttons: this.buttons.map(() => false)
         },
         cache: false
-      },
-      nodeCategory: ["Rule", "Action", "Script", "Decision", "Fork", "Join"]
+      }
+      // nodeCategory: ["Rule", "Action", "Script", "Decision", "Fork", "Join"]
     };
   },
   created() {
