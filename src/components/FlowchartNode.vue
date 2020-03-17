@@ -280,20 +280,6 @@ export default {
         return typeof val === "number";
       }
     },
-    centeredX: {
-      type: Number,
-      default: 0,
-      validator(val) {
-        return typeof val === "number";
-      }
-    },
-    centeredY: {
-      type: Number,
-      default: 0,
-      validator(val) {
-        return typeof val === "number";
-      }
-    },
     type: {
       type: String,
       default: "Default"
@@ -306,9 +292,9 @@ export default {
       type: Object,
       default() {
         return {
-          centerX: 1024,
+          centerX: 0,
           scale: 1,
-          centerY: 140
+          centerY: 0
         };
       }
     },
@@ -416,8 +402,8 @@ export default {
     },
     nodeStyle() {
       return {
-        top: (this.centeredY || this.y) * this.options.scale + "px", // remove: this.options.offsetTop +
-        left: (this.centeredX || this.x) * this.options.scale + "px", // remove: this.options.offsetLeft +
+        top: this.options.centerY + this.y * this.options.scale + "px", // remove: this.options.offsetTop +
+        left: this.options.centerX + this.x * this.options.scale + "px", // remove: this.options.offsetLeft +
         transform: `scale(${this.options.scale})`
       };
     },

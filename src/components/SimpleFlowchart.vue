@@ -613,14 +613,8 @@ export default {
         this.mouse.lastX = this.mouse.x;
         this.mouse.lastY = this.mouse.y;
 
-        this.scene.centerX = diffX;
-        this.scene.centerY = diffY;
-
-        this.scene.nodes = this.scene.nodes.map(node => ({
-          ...node,
-          centeredX: (node.centeredX || node.x) + diffX,
-          centeredY: (node.centeredY || node.y) + diffY
-        }));
+        this.scene.centerX += diffX;
+        this.scene.centerY += diffY;
 
         // this.hasDragged = true
       }
