@@ -416,9 +416,9 @@ export default {
   methods: {
     refreshNodes() {
       const startElement = document.getElementsByClassName("node-start")[0];
-      const configElement = document.getElementsByClassName(
-        "node-config-button"
-      )[0];
+      // const configElement = document.getElementsByClassName(
+      //   "node-config-button"
+      // )[0];
 
       this.additionalHeight =
         this.isStart && startElement ? startElement.offsetHeight / 2 : 0;
