@@ -22,7 +22,7 @@
         />
         <div v-if="isStart" :id="'node-main_' + id" class="node-start">
           <el-input
-            v-if="editing.start"
+            v-if="editing.start && !isLocked"
             :value="startNodeTitle"
             @input="$emit('update:startNodeTitle', $event)"
           />
@@ -30,7 +30,7 @@
         </div>
         <div ref="nodeType" :id="'node-type_' + id" class="node-type">
           <div style="display: flex; align-items: center;">
-            <el-button
+            <!-- <el-button
               slot="reference"
               :icon="!isLocked ? 'el-icon-unlock' : 'el-icon-lock'"
               type="warning"
@@ -38,7 +38,7 @@
               plain
               circle
               @click="$emit('update:isLocked', !isLocked); delay()"
-            ></el-button>
+            ></el-button>-->
             <!-- <el-select
               v-if="editing.type"
               :value="type"
@@ -46,7 +46,11 @@
             >
               <el-option v-for="(item, index) in nodeCategory" :key="index" :value="index">{{item}}</el-option>
             </el-select>-->
-            <el-input v-if="editing.id" :value="id" @input="$emit('update:id', $event)" />
+            <el-input
+              v-if="editing.id && !isLocked"
+              :value="id"
+              @input="$emit('update:id', $event)"
+            />
             <span v-else style="flex-grow: 1">{{id}}</span>
             <el-popover placement="right-start" width="200" trigger="hover" title="Edit Menu">
               <div style="display: flex; flex-direction: column;">
@@ -58,7 +62,12 @@
                     @input="$emit('update:isStart', !isStart); delay()"
                   />
                 </div>
-                <el-popover placement="right-start" width="200" trigger="hover" title="Version">
+                <span style="flex-grow: 1;margin: 10px 0;">Version</span>
+                <el-select placeholder="Version">
+                  <el-option label="English" value="EN"></el-option>
+                  <el-option label="Bahasa Indonesia" value="ID"></el-option>
+                </el-select>
+                <el-popover placement="buttom" width="200" trigger="hover" title="Version">
                   <div style="display: flex; flex-direction: column; flex-grow: 1;">
                     <el-button type="text" plain>English</el-button>
                   </div>
@@ -119,22 +128,22 @@
                   </div>
                 </template>
                 <el-divider content-position="left">Settings</el-divider>
-                <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                <!-- <div style="display: flex; flex-direction: column; flex-grow: 1;">
                   <el-button
                     :icon="!isLocked ? 'el-icon-unlock' : 'el-icon-lock'"
                     :type="!isLocked ? 'primary' : 'text'"
                     plain
                     @click="$emit('update:isLocked', !isLocked); delay()"
                   >{{!isLocked ? 'Lock' : 'Unlock'}} Editing</el-button>
-                </div>
-                <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                </div>-->
+                <!-- <div style="display: flex; flex-direction: column; flex-grow: 1;">
                   <el-button
                     :id="'config-button_' + id"
                     type="text"
                     plain
                     @click="showingDrawer"
                   >Show Configurations</el-button>
-                </div>
+                </div>-->
                 <div style="display: flex; flex-direction: column; flex-grow: 1;">
                   <el-button
                     icon="el-icon-delete"
@@ -157,7 +166,7 @@
         <div class="node-label" :id="'label_' + id">
           <div ref="labelTitle" class="node-label-title" :id="'label-title_' + id">
             <el-input
-              v-if="editing.label"
+              v-if="editing.label && !isLocked"
               type="textarea"
               :rows="3"
               :value="label"
@@ -180,7 +189,7 @@
             >
               <div style="position: relative">
                 <el-input
-                  v-if="editing.options.value"
+                  v-if="editing.options.value && !isLocked"
                   type="textarea"
                   :rows="temp.buttonRows"
                   :value="button.text"
