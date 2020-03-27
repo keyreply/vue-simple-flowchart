@@ -152,7 +152,7 @@ export default {
   watch: {
     "$store.state.mappedFlow": {
       handler: function() {
-        this.updateLine.lockedNodes = this.scene.nodes.map(() => true);
+        this.updateLine.lockedNodes = this.scene.nodes.map(() => false);
       },
       deep: true
     },
@@ -174,7 +174,7 @@ export default {
             (item, index) => index !== deletedIndex
           );
         } else if (val.length > old.length) {
-          this.updateLine.lockedNodes = [...this.updateLine.lockedNodes, true];
+          this.updateLine.lockedNodes = [...this.updateLine.lockedNodes, false];
         }
         // this.filterShownNodes();
         this.$nextTick(() => {
@@ -196,7 +196,7 @@ export default {
     // this.filterShownNodes();
     this.rootDivOffset.top = this.$el ? this.$el.offsetTop : 0;
     this.rootDivOffset.left = this.$el ? this.$el.offsetLeft : 0;
-    this.updateLine.lockedNodes = this.scene.nodes.map(() => true);
+    this.updateLine.lockedNodes = this.scene.nodes.map(() => false);
     this.getLinks();
   },
   methods: {
