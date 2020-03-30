@@ -794,6 +794,10 @@ $portSize: 16;
         background: #fff;
         padding: 16px;
       }
+
+      span {
+        overflow-wrap: break-word;
+      }
     }
   }
   .node-port {
