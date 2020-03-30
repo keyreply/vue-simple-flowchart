@@ -9,7 +9,11 @@
       :class="{ selected: options.selected === id }"
       ref="flowchartNode"
     >
-      <div :id="'node-main_' + id" class="node-main">
+      <div
+        :id="'node-main_' + id"
+        class="node-main"
+        :class="{ 'version-exists' : versions.length > 0 }"
+      >
         <div
           class="node-port node-input"
           :style="nodePortStyle"
@@ -382,6 +386,12 @@ export default {
       default() {
         return [];
       }
+    },
+    versions: {
+      type: Array,
+      default() {
+        return [];
+      }
     }
   },
   data() {
@@ -724,9 +734,32 @@ $portSize: 16;
   cursor: move;
   transform-origin: top left;
   z-index: 1;
+
   .node-main {
     position: relative;
     text-align: center;
+    &.version-exists {
+      box-shadow: 2px 1px 1px rgba(0, 0, 0, 0.15);
+      &:before {
+        left: 7px;
+        top: 5px;
+        z-index: -1;
+      }
+      &:after {
+        left: 12px;
+        top: 10px;
+        z-index: -2;
+      }
+      &:before,
+      &:after {
+        content: "";
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background-color: #eee;
+        box-shadow: 2px 1px 1px rgba(0, 0, 0, 0.15);
+      }
+    }
     .node-start {
       margin: 0 auto;
       background: #e4392b;
