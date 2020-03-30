@@ -6,7 +6,7 @@
       @mousedown="handleMousedown"
       @mouseover="handleMouseOver"
       @mouseleave="handleMouseLeave"
-      :class="{selected: options.selected === id}"
+      :class="{ selected: options.selected === id }"
       ref="flowchartNode"
     >
       <div :id="'node-main_' + id" class="node-main">
@@ -22,7 +22,7 @@
             :value="startNodeTitle"
             @input="$emit('update:startNodeTitle', $event)"
           />
-          <span v-else>{{startNodeTitle}}</span>
+          <span v-else>{{ startNodeTitle }}</span>
         </div>
         <div ref="nodeType" :id="'node-type_' + id" class="node-type">
           <div style="display: flex; align-items: center;">
@@ -47,15 +47,23 @@
               :value="id"
               @input="$emit('update:id', $event)"
             />
-            <span v-else style="flex-grow: 1">{{id}}</span>
-            <el-popover placement="right-start" width="200" trigger="hover" title="Edit Menu">
+            <span v-else style="flex-grow: 1">{{ id }}</span>
+            <el-popover
+              placement="right-start"
+              width="200"
+              trigger="hover"
+              title="Edit Menu"
+            >
               <div style="display: flex; flex-direction: column;">
                 <div style="display: flex;">
-                  <span style="flex-grow: 1;">Node Start</span>
+                  <span style="flex-grow: 1;">Starting Node</span>
                   <el-switch
                     :disabled="foundIsStart && !isStart"
                     :value="isStart"
-                    @input="$emit('update:isStart', !isStart); delay()"
+                    @input="
+                      $emit('update:isStart', !isStart);
+                      delay();
+                    "
                   />
                 </div>
                 <span style="flex-grow: 1;margin: 10px 0;">Version</span>
@@ -63,11 +71,20 @@
                   <el-option label="English" value="EN"></el-option>
                   <el-option label="Bahasa Indonesia" value="ID"></el-option>
                 </el-select>
-                <el-popover placement="buttom" width="200" trigger="hover" title="Version">
-                  <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                <el-popover
+                  placement="buttom"
+                  width="200"
+                  trigger="hover"
+                  title="Version"
+                >
+                  <div
+                    style="display: flex; flex-direction: column; flex-grow: 1;"
+                  >
                     <el-button type="text" plain>English</el-button>
                   </div>
-                  <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                  <div
+                    style="display: flex; flex-direction: column; flex-grow: 1;"
+                  >
                     <el-button type="text" plain>Bahasa Indonesia</el-button>
                   </div>
                   <div
@@ -79,48 +96,81 @@
                 </el-popover>
                 <template v-if="!isLocked">
                   <el-divider content-position="left">Node Details</el-divider>
-                  <div v-if="isStart" style="display: flex; flex-direction: column; flex-grow: 1;">
+                  <div
+                    v-if="isStart"
+                    style="display: flex; flex-direction: column; flex-grow: 1;"
+                  >
                     <el-button
                       :icon="editing.start ? 'el-icon-unlock' : 'el-icon-lock'"
                       :type="editing.start ? 'primary' : 'text'"
                       plain
-                      @click="editing.start = !editing.start; delay()"
-                    >Start Title</el-button>
+                      @click="
+                        editing.start = !editing.start;
+                        delay();
+                      "
+                      >Start Title</el-button
+                    >
                   </div>
-                  <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                  <div
+                    style="display: flex; flex-direction: column; flex-grow: 1;"
+                  >
                     <el-button
                       :icon="editing.id ? 'el-icon-unlock' : 'el-icon-lock'"
                       :type="editing.id ? 'primary' : 'text'"
                       plain
-                      @click="editing.id = !editing.id; delay()"
-                    >Node ID</el-button>
+                      @click="
+                        editing.id = !editing.id;
+                        delay();
+                      "
+                      >Node ID</el-button
+                    >
                   </div>
-                  <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                  <div
+                    style="display: flex; flex-direction: column; flex-grow: 1;"
+                  >
                     <el-button
                       :icon="editing.type ? 'el-icon-unlock' : 'el-icon-lock'"
                       :type="editing.type ? 'primary' : 'text'"
                       plain
-                      @click="editing.type = !editing.type; delay()"
-                    >Type</el-button>
+                      @click="
+                        editing.type = !editing.type;
+                        delay();
+                      "
+                      >Type</el-button
+                    >
                   </div>
-                  <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                  <div
+                    style="display: flex; flex-direction: column; flex-grow: 1;"
+                  >
                     <el-button
                       :icon="editing.label ? 'el-icon-unlock' : 'el-icon-lock'"
                       :type="editing.label ? 'primary' : 'text'"
                       plain
-                      @click="editing.label = !editing.label; delay()"
-                    >Label</el-button>
+                      @click="
+                        editing.label = !editing.label;
+                        delay();
+                      "
+                      >Label</el-button
+                    >
                   </div>
                   <div
                     v-if="buttons.length"
                     style="display: flex; flex-direction: column; flex-grow: 1;"
                   >
                     <el-button
-                      :icon="editing.options.value ? 'el-icon-unlock' : 'el-icon-lock'"
+                      :icon="
+                        editing.options.value
+                          ? 'el-icon-unlock'
+                          : 'el-icon-lock'
+                      "
                       :type="editing.options.value ? 'primary' : 'text'"
                       plain
-                      @click="editing.options.value = !editing.options.value; delay()"
-                    >Options</el-button>
+                      @click="
+                        editing.options.value = !editing.options.value;
+                        delay();
+                      "
+                      >Options</el-button
+                    >
                   </div>
                 </template>
                 <el-divider content-position="left">Settings</el-divider>
@@ -140,12 +190,15 @@
                     @click="showingDrawer"
                   >Show Configurations</el-button>
                 </div>-->
-                <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                <div
+                  style="display: flex; flex-direction: column; flex-grow: 1;"
+                >
                   <el-button
                     icon="el-icon-delete"
                     type="danger"
                     @click="$emit('nodeDelete')"
-                  >Delete this node</el-button>
+                    >Delete this node</el-button
+                  >
                 </div>
               </div>
               <el-button
@@ -160,7 +213,11 @@
           </div>
         </div>
         <div class="node-label" :id="'label_' + id">
-          <div ref="labelTitle" class="node-label-title" :id="'label-title_' + id">
+          <div
+            ref="labelTitle"
+            class="node-label-title"
+            :id="'label-title_' + id"
+          >
             <el-input
               v-if="editing.label && !isLocked"
               type="textarea"
@@ -168,7 +225,7 @@
               :value="label"
               @input="$emit('update:label', $event)"
             />
-            <span v-else>{{label}}</span>
+            <span v-else>{{ label }}</span>
           </div>
           <div
             v-if="buttons.length > 0 && !isLocked"
@@ -189,15 +246,22 @@
                   type="textarea"
                   :rows="temp.buttonRows"
                   :value="button.text"
-                  @input="$emit('updateButtonText', { text: $event, buttonId: button.id })"
+                  @input="
+                    $emit('updateButtonText', {
+                      text: $event,
+                      buttonId: button.id
+                    })
+                  "
                 />
-                <span v-else>{{button.text}}</span>
+                <span v-else>{{ button.text }}</span>
                 <div
                   style="top: -20px; right: -20px"
                   v-show="editing.options.value && button.show"
                   class="button-delete"
                   @click="$emit('deleteButtonNode', button.id)"
-                >&times;</div>
+                >
+                  &times;
+                </div>
               </div>
               <div
                 class="node-port node-output"
