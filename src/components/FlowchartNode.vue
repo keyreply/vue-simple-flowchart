@@ -70,11 +70,20 @@
                   <el-option label="English" value="EN"></el-option>
                   <el-option label="Bahasa Indonesia" value="ID"></el-option>
                 </el-select>
-                <el-popover placement="buttom" width="200" trigger="hover" title="Version">
-                  <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                <el-popover
+                  placement="buttom"
+                  width="200"
+                  trigger="hover"
+                  title="Version"
+                >
+                  <div
+                    style="display: flex; flex-direction: column; flex-grow: 1;"
+                  >
                     <el-button type="text" plain>English</el-button>
                   </div>
-                  <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                  <div
+                    style="display: flex; flex-direction: column; flex-grow: 1;"
+                  >
                     <el-button type="text" plain>Bahasa Indonesia</el-button>
                   </div>
                   <div
@@ -86,7 +95,10 @@
                 </el-popover>
                 <template v-if="!isLocked">
                   <el-divider content-position="left">Node Details</el-divider>
-                  <div v-if="isStart" style="display: flex; flex-direction: column; flex-grow: 1;">
+                  <div
+                    v-if="isStart"
+                    style="display: flex; flex-direction: column; flex-grow: 1;"
+                  >
                     <el-button
                       :icon="editing.start ? 'el-icon-unlock' : 'el-icon-lock'"
                       :type="editing.start ? 'primary' : 'text'"
@@ -95,9 +107,12 @@
                         editing.start = !editing.start;
                         delay();
                       "
-                    >Start Title</el-button>
+                      >Start Title</el-button
+                    >
                   </div>
-                  <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                  <div
+                    style="display: flex; flex-direction: column; flex-grow: 1;"
+                  >
                     <el-button
                       :icon="editing.id ? 'el-icon-unlock' : 'el-icon-lock'"
                       :type="editing.id ? 'primary' : 'text'"
@@ -106,9 +121,12 @@
                         editing.id = !editing.id;
                         delay();
                       "
-                    >Node ID</el-button>
+                      >Node ID</el-button
+                    >
                   </div>
-                  <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                  <div
+                    style="display: flex; flex-direction: column; flex-grow: 1;"
+                  >
                     <el-button
                       :icon="editing.type ? 'el-icon-unlock' : 'el-icon-lock'"
                       :type="editing.type ? 'primary' : 'text'"
@@ -117,9 +135,12 @@
                         editing.type = !editing.type;
                         delay();
                       "
-                    >Type</el-button>
+                      >Type</el-button
+                    >
                   </div>
-                  <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                  <div
+                    style="display: flex; flex-direction: column; flex-grow: 1;"
+                  >
                     <el-button
                       :icon="editing.label ? 'el-icon-unlock' : 'el-icon-lock'"
                       :type="editing.label ? 'primary' : 'text'"
@@ -128,7 +149,8 @@
                         editing.label = !editing.label;
                         delay();
                       "
-                    >Label</el-button>
+                      >Label</el-button
+                    >
                   </div>
                   <div
                     v-if="buttons.length"
@@ -146,7 +168,8 @@
                         editing.options.value = !editing.options.value;
                         delay();
                       "
-                    >Options</el-button>
+                      >Options</el-button
+                    >
                   </div>
                 </template>
                 <el-divider content-position="left">Settings</el-divider>
@@ -166,12 +189,15 @@
                     @click="showingDrawer"
                   >Show Configurations</el-button>
                 </div>-->
-                <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                <div
+                  style="display: flex; flex-direction: column; flex-grow: 1;"
+                >
                   <el-button
                     icon="el-icon-delete"
                     type="danger"
                     @click="$emit('nodeDelete')"
-                  >Delete this node</el-button>
+                    >Delete this node</el-button
+                  >
                 </div>
               </div>
               <el-button
@@ -186,7 +212,11 @@
           </div>
         </div>
         <div class="node-label" :id="'label_' + id">
-          <div ref="labelTitle" class="node-label-title" :id="'label-title_' + id">
+          <div
+            ref="labelTitle"
+            class="node-label-title"
+            :id="'label-title_' + id"
+          >
             <el-input
               v-if="editing.label && !isLocked"
               type="textarea"
@@ -207,7 +237,11 @@
               v-for="(button, index) in styledButtons"
               :key="index"
               :id="'button_' + id + '_' + index"
-              class="node-label-button"
+              :class="
+                button.styleType === 'button'
+                  ? 'node-label-button'
+                  : 'node-label-quickreply'
+              "
             >
               <div style="position: relative">
                 <el-input
@@ -228,7 +262,9 @@
                   v-show="editing.options.value && button.show"
                   class="button-delete"
                   @click="$emit('deleteButtonNode', button.id)"
-                >&times;</div>
+                >
+                  &times;
+                </div>
               </div>
               <div
                 class="node-port node-output"
@@ -822,6 +858,14 @@ $portSize: 16;
   border-radius: 4px;
   background: #efefef;
   color: #0084ff;
+  padding: 10px;
+  font-weight: 600;
+}
+.node-label-quickreply {
+  border: 1px solid #c71616;
+  border-radius: 4px;
+  background: #f53535;
+  color: #ffffff;
   padding: 10px;
   font-weight: 600;
 }
