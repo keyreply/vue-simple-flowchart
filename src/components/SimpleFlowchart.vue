@@ -2,8 +2,14 @@
   <div @mouseup="itemRelease" @mousemove="itemMove">
     <div id="flowchart" class="flowchart" @dragstart="onDragStart">
       <div id="toolbar" class="flowchart-toolbar">
-        <div class="flowchart-toolbar-item" @mousedown="(e) => itemClick(e, 'Rule')">
-          <i class="el-icon-copy-document" style="font-size: 40px; margin-bottom: 10px;"></i>
+        <div
+          class="flowchart-toolbar-item"
+          @mousedown="e => itemClick(e, 'Rule')"
+        >
+          <i
+            class="el-icon-copy-document"
+            style="font-size: 40px; margin-bottom: 10px;"
+          ></i>
           <span>Content</span>
         </div>
       </div>
@@ -13,7 +19,11 @@
         id="flowchart-container"
         @tap="vtouch"
       >
-        <div @mousemove="handleMove" @mouseup="handleUp" @mousedown="handleDown">
+        <div
+          @mousemove="handleMove"
+          @mouseup="handleUp"
+          @mousedown="handleDown"
+        >
           <flowchart-node
             v-bind.sync="node"
             :showDrawer.sync="showDrawer"
@@ -241,7 +251,14 @@ export default {
 
         x = this.scene.centerX + fromNode.x;
         y = this.scene.centerY + fromNode.y;
-        posResult = this.getPortPosition(fromNode, "right", x, y, link.button);
+        posResult = this.getPortPosition(
+          fromNode,
+          "right",
+          x,
+          y,
+          link.button,
+          link.quickReply ? "quickReply" : "button"
+        );
         if (!posResult) {
           const error = {
             message: "not able positioning node buttons, button not exist!",
@@ -415,7 +432,7 @@ export default {
         return id === item.id;
       });
     },
-    getPortPosition(node, type, x, y, buttonId) {
+    getPortPosition(node, type, x, y, buttonId, styleType) {
       let labelHeight = 0,
         labelWidth = 0;
 
@@ -448,7 +465,7 @@ export default {
           !this.updateLine.lockedNodes[index]
         ) {
           buttonIndex = node.buttons.findIndex(
-            button => button.id === buttonId
+            button => button.id === buttonId && button.styleType === styleType
           );
           if (buttonIndex < 0) {
             return null;

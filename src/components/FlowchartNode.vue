@@ -12,7 +12,7 @@
       <div
         :id="'node-main_' + id"
         class="node-main"
-        :class="{ 'version-exists' : versions.length > 0 }"
+        :class="{ 'version-exists': versions.length > 0 }"
       >
         <div
           class="node-port node-input"
@@ -71,7 +71,7 @@
                   />
                 </div>
                 <span style="flex-grow: 1;margin: 10px 0;">Version</span>
-                <el-select placeholder="Version">
+                <el-select value="EN" placeholder="Version">
                   <el-option label="English" value="EN"></el-option>
                   <el-option label="Bahasa Indonesia" value="ID"></el-option>
                 </el-select>
@@ -291,14 +291,14 @@
           @mouseup="outputMouseUp"
         />
       </div>
-      <div
+      <!-- <div
         v-if="options.selected === id && !options.moving && !isLocked"
         :id="'add-button_' + id"
         class="node-config-button"
         @click="addingButton"
       >
         <span>Add other options...</span>
-      </div>
+      </div> -->
       <div v-show="show.delete" class="node-delete">&times;</div>
     </div>
   </div>
