@@ -2,16 +2,25 @@
   <div @mouseup="itemRelease" @mousemove="itemMove">
     <div id="flowchart" class="flowchart" @dragstart="onDragStart">
       <div id="toolbar" class="flowchart-toolbar">
-        <div class="flowchart-toolbar-item" @mousedown="(e) => itemClick(e, 'Rule')">
-          <i class="el-icon-copy-document" style="font-size: 40px; margin-bottom: 10px;"></i>
+        <div
+          class="flowchart-toolbar-item"
+          @mousedown="e => itemClick(e, 'Rule')"
+        >
+          <i
+            class="el-icon-copy-document"
+            style="font-size: 40px; margin-bottom: 10px;"
+          ></i>
           <span>Content</span>
         </div>
       </div>
-      <v-touch ref="flowchartContainer" class="flowchart-container"
+      <div
+        ref="flowchartContainer"
+        class="flowchart-container"
+        id="flowchart-container"
         @tap="vtouch"
       >
-        <div 
-          @mousemove="handleMove" 
+        <div
+          @mousemove="handleMove"
           @mouseup="handleUp"
           @mousedown="handleDown"
         >
@@ -20,8 +29,8 @@
             :showDrawer.sync="showDrawer"
             :isLocked.sync="updateLine.lockedNodes[index]"
             @addingButtons="addingButtons(node.id, $event)"
-            :startNodeTitle.sync="scene.startNodeTitle"  
-            v-for="(node, index) in shownNodes"
+            :startNodeTitle.sync="scene.startNodeTitle"
+            v-for="(node, index) in scene.nodes"
             :key="`node${index}`"
             :options="nodeOptions"
             @linkingStart="linkingStart(node.id, $event)"
@@ -32,18 +41,17 @@
             @deleteButtonNode="deleteButtonNode(node.id, $event)"
             @nodeDelete="nodeDelete(node.id)"
             :foundIsStart="foundIsStart"
-            :container="$refs.flowchartContainer"
-          >
-          </flowchart-node>
+          ></flowchart-node>
           <svg width="100%" :height="`${height}px`">
-              <flowchart-link v-bind.sync="link"
-                v-for="(link, index) in shownLinks"
-                :key="`link${index}`"
-                @deleteLink="linkDelete(link.id)">
-              </flowchart-link>
+            <flowchart-link
+              v-bind.sync="link"
+              v-for="(link, index) in links"
+              :key="`link${index}`"
+              @deleteLink="linkDelete(link.id)"
+            />
           </svg>
         </div>
-      </v-touch>
+      </div>
       <div
         class="dragging-node"
         v-if="moving"
@@ -73,9 +81,8 @@ export default {
           scale: 1,
           centerY: 0,
           nodes: [],
-          links: [],
-          shownNodes: []
-        }
+          links: []
+        };
       }
     },
     height: {
@@ -128,7 +135,7 @@ export default {
         lockedNodes: []
       },
       shownNodes: [],
-      shownLinks: [],
+      links: [],
       canvasMoving: false
     };
   },
@@ -153,6 +160,12 @@ export default {
     }
   },
   watch: {
+    "$store.state.mappedFlow": {
+      handler: function() {
+        this.updateLine.lockedNodes = this.scene.nodes.map(() => false);
+      },
+      deep: true
+    },
     "scene.nodes": {
       handler: function(val, old) {
         if (val.length < old.length) {
@@ -171,29 +184,52 @@ export default {
             (item, index) => index !== deletedIndex
           );
         } else if (val.length > old.length) {
-          this.updateLine.lockedNodes = [...this.updateLine.lockedNodes, true];
+          this.updateLine.lockedNodes = [...this.updateLine.lockedNodes, false];
         }
-        this.filterShownNodes();
+        // this.filterShownNodes();
+        this.$nextTick(() => {
+          this.getLinks();
+        });
+      },
+      deep: true
+    },
+    scene: {
+      handler: function() {
+        this.$nextTick(() => {
+          this.getLinks();
+        });
       },
       deep: true
     }
   },
   mounted() {
-    this.filterShownNodes();
-    this.getLinks();
+    // this.filterShownNodes();
     this.rootDivOffset.top = this.$el ? this.$el.offsetTop : 0;
     this.rootDivOffset.left = this.$el ? this.$el.offsetLeft : 0;
-    this.updateLine.lockedNodes = this.shownNodes.map(() => true);
+    this.updateLine.lockedNodes = this.scene.nodes.map(() => false);
+    this.getLinks();
   },
   methods: {
     getLinks() {
-      const container = this.$refs.flowchartContainer;
-      const containerHeight = container ? (container.$el ? container.$el.clientHeight : 0) : 0;
-      const containerWidth = container ? (container.$el ? container.$el.clientWidth : 0) : 0;
+      // const container = this.$refs.flowchartContainer;
+      // const containerHeight = container
+      //   ? container.$el
+      //     ? container.$el.clientHeight
+      //     : container.clientHeight
+      //     ? container.clientHeight
+      //     : 0
+      //   : 0;
+      // const containerWidth = container
+      //   ? container.$el
+      //     ? container.$el.clientWidth
+      //     : container.clientWidth
+      //     ? container.clientWidth
+      //     : 0
+      //   : 0;
 
-      let lines = this.scene.links.map((link) => {
-        const fromNode = this.findNodeWithID(link.from)
-        const toNode = this.findNodeWithID(link.to)
+      let lines = this.scene.links.map(link => {
+        const fromNode = this.findNodeWithID(link.from);
+        const toNode = this.findNodeWithID(link.to);
         let x, y, cy, cx, ex, ey;
         let posResult;
 
@@ -213,9 +249,16 @@ export default {
           return null;
         }
 
-        x = this.scene.centerX + (fromNode.centeredX || fromNode.x);
-        y = this.scene.centerY + (fromNode.centeredY || fromNode.y);
-        posResult = this.getPortPosition(fromNode, "right", x, y, link.button);
+        x = this.scene.centerX + fromNode.x;
+        y = this.scene.centerY + fromNode.y;
+        posResult = this.getPortPosition(
+          fromNode,
+          "right",
+          x,
+          y,
+          link.button,
+          link.quickReply ? "quickReply" : "button"
+        );
         if (!posResult) {
           const error = {
             message: "not able positioning node buttons, button not exist!",
@@ -232,8 +275,8 @@ export default {
         }
         [cx, cy] = posResult;
 
-        x = this.scene.centerX + (toNode.centeredX || toNode.x);
-        y = this.scene.centerY + (toNode.centeredY || toNode.y);
+        x = this.scene.centerX + toNode.x;
+        y = this.scene.centerY + toNode.y;
         posResult = this.getPortPosition(toNode, "left", x, y);
         [ex, ey] = posResult;
 
@@ -257,17 +300,26 @@ export default {
           }
         }
 
-      // filter onscreen lines based on position
-      const isOnscreen = ((cx > -100 && cy > -100 && cx < containerWidth + 100 && cy < containerHeight + 100)
-        || (ex > -100 && ey > -100 && ex < containerWidth + 100 && ey < containerHeight + 100))
-        && containerHeight && containerWidth
-      
-      if(!isOnscreen) {
-        return null;
-      }
+        // // filter onscreen lines based on position
+        // const isOnscreen = !!(
+        //   ((cx > -100 &&
+        //     cy > -100 &&
+        //     cx < containerWidth + 100 &&
+        //     cy < containerHeight + 100) ||
+        //     (ex > -100 &&
+        //       ey > -100 &&
+        //       ex < containerWidth + 100 &&
+        //       ey < containerHeight + 100)) &&
+        //   containerHeight &&
+        //   containerWidth
+        // );
 
-        return { 
-          start: [cx, cy], 
+        // if (!isOnscreen) {
+        //   return null;
+        // }
+
+        return {
+          start: [cx, cy],
           end: [ex, ey],
           id: link.id
         };
@@ -278,8 +330,8 @@ export default {
       if (this.draggingLink) {
         let x, y, cy, cx;
         const fromNode = this.findNodeWithID(this.draggingLink.from);
-        x = this.scene.centerX + (fromNode.centeredX || fromNode.x);
-        y = this.scene.centerY + (fromNode.centeredY || fromNode.y);
+        x = this.scene.centerX + fromNode.x;
+        y = this.scene.centerY + fromNode.y;
         [cx, cy] = this.getPortPosition(fromNode, "right", x, y, -1);
         // push temp dragging link, mouse cursor postion = link end postion
         lines.push({
@@ -288,19 +340,41 @@ export default {
         });
       }
 
-      this.shownLinks = lines;
+      this.links = lines;
     },
-    filterShownNodes() {
-      const container = this.$refs.flowchartContainer;
-      const containerHeight = container ? (container.$el ? container.$el.clientHeight : 0) : 0;
-      const containerWidth = container ? (container.$el ? container.$el.clientWidth : 0) : 0;
+    // filterShownNodes() {
+    //   const container = this.$refs.flowchartContainer;
+    //   const containerHeight = container
+    //     ? container.$el
+    //       ? container.$el.clientHeight
+    //       : container.clientHeight
+    //       ? container.clientHeight
+    //       : 0
+    //     : 0;
+    //   const containerWidth = container
+    //     ? container.$el
+    //       ? container.$el.clientWidth
+    //       : container.clientWidth
+    //       ? container.clientWidth
+    //       : 0
+    //     : 0;
 
-      const shownNodes = this.scene.nodes.filter(p => {
-        return (p.centeredX || p.x) > -100 && (p.centeredY || p.y) > -100 && (p.centeredX || p.x) < containerWidth + 100 && (p.centeredY || p.y) < containerHeight + 100 && containerHeight && containerWidth
-      });
-      
-      this.shownNodes = shownNodes;
-    },
+    //   const shownNodes = this.scene.nodes.filter(p => {
+    //     return (
+    //       (p.centeredX || p.x) > -100 &&
+    //       (p.centeredY || p.y) > -100 &&
+    //       (p.centeredX || p.x) < containerWidth + 100 &&
+    //       (p.centeredY || p.y) < containerHeight + 100 &&
+    //       containerHeight &&
+    //       containerWidth
+    //     );
+    //   });
+
+    //   this.shownNodes = shownNodes;
+    //   this.$nextTick(() => {
+    //     this.getLinks();
+    //   });
+    // },
     // eslint-disable-next-line
     vtouch(e) {
       // console.log({e});
@@ -311,45 +385,54 @@ export default {
       if (!node.buttons || !node.buttons.length) {
         node.buttons = [];
         if (newButton) {
-          this.scene.links = this.scene.links.filter((link) => link.from !== nodeId);
+          this.scene.links = this.scene.links.filter(
+            link => link.from !== nodeId
+          );
         }
       }
       if (newButton) {
         // node.buttons.push(newButton);
-        node.buttons = [...node.buttons, newButton]
+        node.buttons = [...node.buttons, newButton];
       }
-      this.$emit('buttonAdded', { nodeId, newButton });
+      this.$emit("buttonAdded", { nodeId, newButton });
     },
     updateLines(toNodeId, { buttonHeight, buttonsLength }) {
       // const foundIndex = this.scene.nodes.findIndex((node) => node.id === toNodeId);
-      
+
       this.updateLine = {
         ...this.updateLine,
         toNodeId,
         buttonHeight,
         buttonsLength
-      }
+      };
+      this.$nextTick(() => {
+        this.getLinks();
+      });
     },
     updateButtonText(nodeId, { buttonId, text }) {
-      const updatedButton = this.findNodeWithID(nodeId).buttons.find((button) => button.id === buttonId);
+      const updatedButton = this.findNodeWithID(nodeId).buttons.find(
+        button => button.id === buttonId
+      );
 
       updatedButton.text = text;
-      this.$emit('buttonUpdated', { nodeId, updatedButton });
+      this.$emit("buttonUpdated", { nodeId, updatedButton });
     },
     deleteButtonNode(nodeId, buttonId) {
       const node = this.findNodeWithID(nodeId);
-      const deletedButton = node.buttons.find((button) => button.id === buttonId);
+      const deletedButton = node.buttons.find(button => button.id === buttonId);
 
-      node.buttons = node.buttons.filter((button) => button.id !== buttonId);
-      this.scene.links = this.scene.links.filter((link) => link.from !== nodeId || link.button !== buttonId);
-      this.$emit('buttonDeleted', { nodeId, deletedButton });
+      node.buttons = node.buttons.filter(button => button.id !== buttonId);
+      this.scene.links = this.scene.links.filter(
+        link => link.from !== nodeId || link.button !== buttonId
+      );
+      this.$emit("buttonDeleted", { nodeId, deletedButton });
     },
     findNodeWithID(id) {
       return this.scene.nodes.find(item => {
         return id === item.id;
       });
     },
-    getPortPosition(node, type, x, y, buttonId) {
+    getPortPosition(node, type, x, y, buttonId, styleType) {
       let labelHeight = 0,
         labelWidth = 0;
 
@@ -377,12 +460,12 @@ export default {
         );
 
         if (
-          buttonId &&
+          buttonId != null &&
           buttonId !== -1 &&
           !this.updateLine.lockedNodes[index]
         ) {
           buttonIndex = node.buttons.findIndex(
-            button => button.id === buttonId
+            button => button.id === buttonId && button.styleType === styleType
           );
           if (buttonIndex < 0) {
             return null;
@@ -405,10 +488,16 @@ export default {
         }
 
         const nodeTypeElement = document.getElementById(`node-type_${node.id}`);
-        if (!nodeTypeElement) { return null; }
+        if (!nodeTypeElement) {
+          return null;
+        }
 
-        const labelTitleElement = document.getElementById(`label-title_${node.id}`);
-        if (!labelTitleElement) { return null; }
+        const labelTitleElement = document.getElementById(
+          `label-title_${node.id}`
+        );
+        if (!labelTitleElement) {
+          return null;
+        }
 
         // if (nodeTypeElement && labelTitleElement) {
         //   console.log({nodeTypeElement, labelTitleElement})
@@ -521,7 +610,7 @@ export default {
       if (this.action.linking) {
         [this.mouse.x, this.mouse.y] = getMousePosition(this.$el, e);
 
-        const canvas = document.getElementById("flowchart-canvas");
+        const canvas = document.getElementById("flowchart-container");
         const bodyRect = document.body.getBoundingClientRect();
         const rect = canvas.getBoundingClientRect();
         const offsetTop = rect.top - bodyRect.top;
@@ -534,6 +623,7 @@ export default {
           this.mouse.x,
           this.mouse.y
         ];
+        this.getLinks();
       }
       if (this.action.dragging) {
         this.action.moving = true;
@@ -556,14 +646,8 @@ export default {
         this.mouse.lastX = this.mouse.x;
         this.mouse.lastY = this.mouse.y;
 
-        this.scene.centerX = diffX;
-        this.scene.centerY = diffY;
-
-        this.scene.nodes = this.scene.nodes.map(node => ({
-          ...node,
-          centeredX: (node.centeredX || node.x) + diffX,
-          centeredY: (node.centeredY || node.y) + diffY
-        }));
+        this.scene.centerX += diffX;
+        this.scene.centerY += diffY;
 
         // this.hasDragged = true
       }
@@ -606,20 +690,22 @@ export default {
       this.$emit("canvasClick", e);
     },
     moveSelectedNode(dx, dy) {
-      let index = this.shownNodes.findIndex((item) => {
-        return item.id === this.action.dragging
-      })
-      let left = (this.shownNodes[index].centeredX || this.shownNodes[index].x) + dx / this.scene.scale;
-      let top = (this.shownNodes[index].centeredY || this.shownNodes[index].y) + dy / this.scene.scale;
-      this.$set(this.shownNodes, index, Object.assign(this.shownNodes[index], {
-        x: left,
-        y: top,
-        centeredX: left,
-        centeredY: top
-      }));
+      let index = this.scene.nodes.findIndex(item => {
+        return item.id === this.action.dragging;
+      });
+      let left = this.scene.nodes[index].x + dx / this.scene.scale;
+      let top = this.scene.nodes[index].y + dy / this.scene.scale;
+      this.$set(
+        this.scene.nodes,
+        index,
+        Object.assign(this.scene.nodes[index], {
+          x: left,
+          y: top
+        })
+      );
     },
     nodeDelete(id) {
-      this.shownNodes = this.shownNodes.filter((node) => {
+      this.shownNodes = this.shownNodes.filter(node => {
         return node.id !== id;
       });
       this.scene.links = this.scene.links.filter(link => {
@@ -640,7 +726,7 @@ export default {
     },
     itemMove(e) {
       this.canvasMoving = true;
-      if(this.moving) {
+      if (this.moving) {
         [this.mouse.x, this.mouse.y] = getMousePosition(this.$el, e);
 
         const canvas = document.getElementById("flowchart");
