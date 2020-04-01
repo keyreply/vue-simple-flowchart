@@ -2,14 +2,8 @@
   <div @mouseup="itemRelease" @mousemove="itemMove">
     <div id="flowchart" class="flowchart" @dragstart="onDragStart">
       <div id="toolbar" class="flowchart-toolbar">
-        <div
-          class="flowchart-toolbar-item"
-          @mousedown="e => itemClick(e, 'Rule')"
-        >
-          <i
-            class="el-icon-copy-document"
-            style="font-size: 40px; margin-bottom: 10px;"
-          ></i>
+        <div class="flowchart-toolbar-item" @mousedown="e => itemClick(e, 'Rule')">
+          <i class="el-icon-copy-document" style="font-size: 40px; margin-bottom: 10px;"></i>
           <span>Content</span>
         </div>
       </div>
@@ -19,11 +13,7 @@
         id="flowchart-container"
         @tap="vtouch"
       >
-        <div
-          @mousemove="handleMove"
-          @mouseup="handleUp"
-          @mousedown="handleDown"
-        >
+        <div @mousemove="handleMove" @mouseup="handleUp" @mousedown="handleDown">
           <flowchart-node
             v-bind.sync="node"
             :showDrawer.sync="showDrawer"
@@ -257,7 +247,8 @@ export default {
           x,
           y,
           link.button,
-          link.quickReply ? "quickReply" : "button"
+          link.quickReply !== -1 && link.quickReply !== undefined && link.quickReply !== null 
+          ? "quickReply" : "button"
         );
         if (!posResult) {
           const error = {
