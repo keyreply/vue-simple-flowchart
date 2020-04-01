@@ -28,7 +28,11 @@
           />
           <span v-else>{{ startNodeTitle }}</span>
         </div>
-        <div ref="nodeType" :id="'node-type_' + id" class="node-type">
+        <div
+          ref="nodeType"
+          :id="'node-type_' + id"
+          :class="type === 'node' ? 'node-type' : 'node-flow'"
+        >
           <div style="display: flex; align-items: center;">
             <!-- <el-button
               slot="reference"
@@ -52,7 +56,12 @@
               @input="$emit('update:id', $event)"
             />
             <span v-else style="flex-grow: 1">{{ id }}</span>
-            <el-popover placement="right-start" width="200" trigger="hover">
+            <el-popover
+              v-if="type === 'node'"
+              placement="right-start"
+              width="200"
+              trigger="hover"
+            >
               <div style="display: flex; flex-direction: column;">
                 <div style="display: flex;">
                   <span style="flex-grow: 1;">Starting Node</span>
@@ -93,7 +102,7 @@
                     <el-button type="text" plain>Version</el-button>
                   </div>
                 </el-popover>
-                <template v-if="!isLocked">
+                <!-- <template v-if="!isLocked">
                   <el-divider content-position="left">Node Details</el-divider>
                   <div
                     v-if="isStart"
@@ -171,7 +180,7 @@
                       >Options</el-button
                     >
                   </div>
-                </template>
+                </template> -->
                 <el-divider content-position="left">Settings</el-divider>
                 <!-- <div style="display: flex; flex-direction: column; flex-grow: 1;">
                   <el-button
@@ -209,6 +218,14 @@
                 circle
               ></el-button>
             </el-popover>
+            <el-button
+              v-else
+              icon="el-icon-arrow-right"
+              type="success"
+              size="mini"
+              plain
+              circle
+            ></el-button>
           </div>
         </div>
         <div class="node-label" :id="'label_' + id">
@@ -280,7 +297,7 @@
           </div>
         </div>
         <div
-          v-if="buttons.length === 0 || !!isLocked"
+          v-if="(buttons.length === 0 || isLocked) && type === 'node'"
           :id="'node-output_' + id"
           class="node-port node-output"
           :style="nodePortStyle"
@@ -358,7 +375,7 @@ export default {
     },
     type: {
       type: String,
-      default: "Default"
+      default: "node"
     },
     label: {
       type: String,
@@ -775,6 +792,17 @@ $portSize: 16;
     .node-type {
       background: #fff7e2;
       border: 2px solid #fee196;
+      border-radius: 6px;
+      border-bottom-left-radius: 0px;
+      border-bottom-right-radius: 0px;
+      color: black;
+      font-size: 16px;
+      font-weight: 600;
+      padding: 6px;
+    }
+    .node-flow {
+      background: #beffc0;
+      border: 2px solid #5fff6a;
       border-radius: 6px;
       border-bottom-left-radius: 0px;
       border-bottom-right-radius: 0px;
