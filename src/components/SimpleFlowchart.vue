@@ -150,12 +150,6 @@ export default {
     }
   },
   watch: {
-    "$store.state.mappedFlow": {
-      handler: function() {
-        this.updateLine.lockedNodes = this.scene.nodes.map(() => false);
-      },
-      deep: true
-    },
     "scene.nodes": {
       handler: function(val, old) {
         if (val.length < old.length) {
@@ -247,8 +241,11 @@ export default {
           x,
           y,
           link.button,
-          link.quickReply !== -1 && link.quickReply !== undefined && link.quickReply !== null 
-          ? "quickReply" : "button"
+          link.quickReply !== -1 &&
+            link.quickReply !== undefined &&
+            link.quickReply !== null
+            ? "quickReply"
+            : "button"
         );
         if (!posResult) {
           const error = {
