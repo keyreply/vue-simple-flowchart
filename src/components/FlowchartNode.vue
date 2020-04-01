@@ -197,11 +197,7 @@
             />
             <span v-else>{{ label }}</span>
           </div>
-          <div
-            v-if="buttons.length > 0 && !isLocked"
-            class="node-buttons"
-            :id="'node-buttons_' + id"
-          >
+          <div v-if="buttons.length > 0" class="node-buttons" :id="'node-buttons_' + id">
             <div
               @mouseover="button.show = true"
               @mouseleave="button.show = false"
@@ -249,7 +245,7 @@
           </div>
         </div>
         <div
-          v-if="buttons.length === 0 || !!isLocked"
+          v-if="buttons.length === 0"
           :id="'node-output_' + id"
           class="node-port node-output"
           :style="nodePortStyle"
