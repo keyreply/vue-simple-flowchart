@@ -225,11 +225,7 @@
               size="mini"
               plain
               circle
-              @click="
-                jumpMethods.defaultMethod
-                  ? jumpMethods.defaultMethod()
-                  : jumpMethods.setMethod()
-              "
+              @click="jumpMethod()"
             ></el-button>
           </div>
         </div>
@@ -330,16 +326,6 @@ import * as _ from "lodash";
 export default {
   name: "FlowchartNode",
   props: {
-    jumpMethods: {
-      type: Object,
-      default() {
-        return {
-          defaultMethod: () => {
-            alert("it will jump to app methods");
-          }
-        };
-      }
-    },
     isLocked: {
       type: Boolean,
       default: true
@@ -534,6 +520,9 @@ export default {
     }
   },
   methods: {
+    jumpMethod() {
+      this.$emit("jumpMethod", "lempar");
+    },
     refreshNodes() {
       const startElement = document.getElementsByClassName("node-start")[0];
       // const configElement = document.getElementsByClassName(

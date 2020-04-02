@@ -26,7 +26,7 @@
         >
           <flowchart-node
             v-bind.sync="node"
-            :jumpMethods="jumpMethods"
+            @jumpMethod="$emit('jumpMethod', $event)"
             :showDrawer.sync="showDrawer"
             @addingButtons="addingButtons(node.id, $event)"
             :startNodeTitle.sync="scene.startNodeTitle"
@@ -75,16 +75,6 @@ export default {
     sceneId: {
       type: String,
       default: "default_id"
-    },
-    jumpMethods: {
-      type: Object,
-      default() {
-        return {
-          defaultMethod: () => {
-            alert("it will jump to app methods");
-          }
-        };
-      }
     },
     scene: {
       type: Object,
