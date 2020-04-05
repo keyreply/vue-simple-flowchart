@@ -63,7 +63,12 @@
               type === "node" ? id : label
             }}</span>
             <i class="el-icon-warning tree-invalid-icon" v-if="invalid"></i>
-            <el-popover v-if="type === 'node'" placement="right-start" width="200" trigger="hover">
+            <el-popover
+              v-if="type === 'node'"
+              placement="right-start"
+              width="200"
+              trigger="hover"
+            >
               <div style="display: flex; flex-direction: column;">
                 <div style="display: flex;">
                   <span style="flex-grow: 1;">Starting Node</span>
@@ -85,13 +90,18 @@
                   />
                 </div>
                 <span style="flex-grow: 1;margin: 10px 0;">Version</span>
-                <el-popover placement="buttom" width="200" trigger="hover" title="Select Version">
+                <el-popover
+                  placement="buttom"
+                  width="200"
+                  trigger="hover"
+                  title="Select Version"
+                >
                   <div
-                    v-for="(version) in availableVersions"
+                    v-for="version in availableVersions"
                     :key="version.value"
                     style="display: flex; flex-direction: column; flex-grow: 1;"
                   >
-                    <el-button type="text" plain>{{version.label}}</el-button>
+                    <el-button type="text" plain>{{ version.label }}</el-button>
                   </div>
                   <div
                     slot="reference"
@@ -510,6 +520,7 @@ export default {
   methods: {
     jumpMethod(id) {
       this.$emit("jumpMethod", id);
+    },
     getAvailableVersions() {
       const allVersions = this.versions.map(version => {
         const versionLabel = version.id.slice(
