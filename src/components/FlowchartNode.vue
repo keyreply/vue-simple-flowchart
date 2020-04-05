@@ -63,12 +63,7 @@
               type === "node" ? id : label
             }}</span>
             <i class="el-icon-warning tree-invalid-icon" v-if="invalid"></i>
-            <el-popover
-              v-if="type === 'node'"
-              placement="right-start"
-              width="200"
-              trigger="hover"
-            >
+            <el-popover v-if="type === 'node'" placement="right-start" width="200" trigger="hover">
               <div style="display: flex; flex-direction: column;">
                 <div style="display: flex;">
                   <span style="flex-grow: 1;">Starting Node</span>
@@ -90,31 +85,19 @@
                   />
                 </div>
                 <span style="flex-grow: 1;margin: 10px 0;">Version</span>
-                <el-select value="EN" placeholder="Version">
-                  <el-option label="English" value="EN"></el-option>
-                  <el-option label="Bahasa Indonesia" value="ID"></el-option>
-                </el-select>
-                <el-popover
-                  placement="buttom"
-                  width="200"
-                  trigger="hover"
-                  title="Version"
-                >
+                <el-popover placement="buttom" width="200" trigger="hover" title="Select Version">
                   <div
+                    v-for="(version) in availableVersions"
+                    :key="version.value"
                     style="display: flex; flex-direction: column; flex-grow: 1;"
                   >
-                    <el-button type="text" plain>English</el-button>
-                  </div>
-                  <div
-                    style="display: flex; flex-direction: column; flex-grow: 1;"
-                  >
-                    <el-button type="text" plain>Bahasa Indonesia</el-button>
+                    <el-button type="text" plain>{{version.label}}</el-button>
                   </div>
                   <div
                     slot="reference"
                     style="display: flex; flex-direction: column; flex-grow: 1;"
                   >
-                    <el-button type="text" plain>Version</el-button>
+                    <el-button type="text" plain>Select Version</el-button>
                   </div>
                 </el-popover>
                 <!-- <template v-if="!isLocked">
@@ -181,7 +164,7 @@
                       "
                     >Options</el-button>
                   </div>
-                </template> -->
+                </template>-->
                 <el-divider content-position="left">Settings</el-divider>
                 <!-- <div style="display: flex; flex-direction: column; flex-grow: 1;">
                   <el-button
@@ -440,7 +423,9 @@ export default {
           // buttons: this.buttons.map(() => false)
         },
         cache: false
-      }
+      },
+      availableVersions: [],
+      selectedVersion: ""
       // nodeCategory: ["Rule", "Action", "Script", "Decision", "Fork", "Join"]
     };
   },
@@ -450,6 +435,7 @@ export default {
   mounted() {
     this.refreshButtons();
     this.refreshNodes();
+    this.getAvailableVersions();
   },
   watch: {
     buttons: {
@@ -524,6 +510,23 @@ export default {
   methods: {
     jumpMethod(id) {
       this.$emit("jumpMethod", id);
+    getAvailableVersions() {
+      const allVersions = this.versions.map(version => {
+        const versionLabel = version.id.slice(
+          version.id.indexOf(":") + 1,
+          version.id.length
+        );
+        return {
+          value: version.id,
+          label: versionLabel
+        };
+      });
+      const result = [];
+      result.push({
+        value: "original",
+        label: "Original"
+      });
+      this.availableVersions = [...result, ...allVersions];
     },
     refreshNodes() {
       const startElement = document.getElementsByClassName("node-start")[0];
