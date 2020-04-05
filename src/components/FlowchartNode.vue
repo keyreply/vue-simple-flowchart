@@ -35,14 +35,18 @@
         >
           <div style="display: flex; align-items: center;">
             <!-- <el-button
+              v-if="type === 'node'"
               slot="reference"
               :icon="!isLocked ? 'el-icon-unlock' : 'el-icon-lock'"
               type="warning"
               size="mini"
               plain
               circle
-              @click="$emit('update:isLocked', !isLocked); delay()"
-            ></el-button>-->
+              @click="
+                $emit('update:isLocked', !isLocked);
+                delay();
+              "
+            ></el-button> -->
             <!-- <el-select
               v-if="editing.type"
               :value="type"
@@ -55,14 +59,24 @@
               :value="id"
               @input="$emit('update:id', $event)"
             />
-            <span v-else style="flex-grow: 1">{{ id }}</span>
+            <span v-else style="flex-grow: 1">{{
+              type === "node" ? id : label
+            }}</span>
             <i class="el-icon-warning tree-invalid-icon" v-if="invalid"></i>
             <el-popover v-if="type === 'node'" placement="right-start" width="200" trigger="hover">
               <div style="display: flex; flex-direction: column;">
                 <div style="display: flex;">
                   <span style="flex-grow: 1;">Starting Node</span>
-                  <el-switch
+                  <!-- <el-switch
                     :disabled="foundIsStart && !isStart"
+                    :value="isStart"
+                    @input="
+                      $emit('update:isStart', !isStart);
+                      delay();
+                    "
+                  /> -->
+                  <el-switch
+                    disabled
                     :value="isStart"
                     @input="
                       $emit('update:isStart', !isStart);
@@ -168,12 +182,16 @@
                     @click="showingDrawer"
                   >Show Configurations</el-button>
                 </div>-->
-                <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                <div
+                  style="display: flex; flex-direction: column; flex-grow: 1;"
+                >
                   <el-button
                     icon="el-icon-delete"
                     type="danger"
+                    disabled
                     @click="$emit('nodeDelete')"
-                  >Delete this node</el-button>
+                    >Delete this node</el-button
+                  >
                 </div>
               </div>
               <el-button
@@ -185,11 +203,23 @@
                 circle
               ></el-button>
             </el-popover>
-            <el-button v-else icon="el-icon-arrow-right" type="success" size="mini" plain circle></el-button>
+            <el-button
+              v-else
+              icon="el-icon-arrow-right"
+              type="success"
+              size="mini"
+              plain
+              circle
+              @click="jumpMethod(id)"
+            ></el-button>
           </div>
         </div>
-        <div class="node-label" :id="'label_' + id">
-          <div ref="labelTitle" class="node-label-title" :id="'label-title_' + id">
+        <div v-if="type === 'node'" class="node-label" :id="'label_' + id">
+          <div
+            ref="labelTitle"
+            class="node-label-title"
+            :id="'label-title_' + id"
+          >
             <el-input
               v-if="editing.label && !isLocked"
               type="textarea"
@@ -199,7 +229,11 @@
             />
             <span v-else>{{ label }}</span>
           </div>
-          <div v-if="buttons.length > 0" class="node-buttons" :id="'node-buttons_' + id">
+          <div
+            v-if="buttons.length > 0 && !isLocked"
+            class="node-buttons"
+            :id="'node-buttons_' + id"
+          >
             <div
               @mouseover="button.show = true"
               @mouseleave="button.show = false"
@@ -231,7 +265,9 @@
                   v-show="editing.options.value && button.show"
                   class="button-delete"
                   @click="$emit('deleteButtonNode', button.id)"
-                >&times;</div>
+                >
+                  &times;
+                </div>
               </div>
               <div
                 class="node-port node-output"
@@ -247,7 +283,7 @@
           </div>
         </div>
         <div
-          v-if="buttons.length === 0 && type === 'node'"
+          v-if="(buttons.length === 0 || isLocked) && type === 'node'"
           :id="'node-output_' + id"
           class="node-port node-output"
           :style="nodePortStyle"
@@ -472,6 +508,8 @@ export default {
     }
   },
   methods: {
+    jumpMethod(id) {
+      this.$emit("jumpMethod", id);
     getAvailableVersions() {
       const allVersions = this.versions.map(version => {
         const versionLabel = version.id.slice(
@@ -786,7 +824,7 @@ $portSize: 16;
       color: black;
       font-size: 16px;
       font-weight: 600;
-      padding: 6px;
+      padding: 30px 6px;
     }
     .node-label {
       font-size: 14px;
