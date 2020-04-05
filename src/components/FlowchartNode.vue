@@ -71,26 +71,19 @@
                   />
                 </div>
                 <span style="flex-grow: 1;margin: 10px 0;">Version</span>
-                <el-select :value="selectedVersion" placeholder="Version">
-                  <el-option
+                <el-popover placement="buttom" width="200" trigger="hover" title="Select Version">
+                  <div
                     v-for="(version) in availableVersions"
                     :key="version.value"
-                    :label="version.label"
-                    :value="version.label"
-                  ></el-option>
-                </el-select>
-                <el-popover placement="buttom" width="200" trigger="hover" title="Version">
-                  <div style="display: flex; flex-direction: column; flex-grow: 1;">
-                    <el-button type="text" plain>English</el-button>
-                  </div>
-                  <div style="display: flex; flex-direction: column; flex-grow: 1;">
-                    <el-button type="text" plain>Bahasa Indonesia</el-button>
+                    style="display: flex; flex-direction: column; flex-grow: 1;"
+                  >
+                    <el-button type="text" plain>{{version.label}}</el-button>
                   </div>
                   <div
                     slot="reference"
                     style="display: flex; flex-direction: column; flex-grow: 1;"
                   >
-                    <el-button type="text" plain>Version</el-button>
+                    <el-button type="text" plain>Select Version</el-button>
                   </div>
                 </el-popover>
                 <!-- <template v-if="!isLocked">
