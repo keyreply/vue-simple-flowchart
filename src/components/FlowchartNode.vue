@@ -57,12 +57,7 @@
             />
             <span v-else style="flex-grow: 1">{{ id }}</span>
             <i class="el-icon-warning tree-invalid-icon" v-if="invalid"></i>
-            <el-popover
-              v-if="type === 'node'"
-              placement="right-start"
-              width="200"
-              trigger="hover"
-            >
+            <el-popover v-if="type === 'node'" placement="right-start" width="200" trigger="hover">
               <div style="display: flex; flex-direction: column;">
                 <div style="display: flex;">
                   <span style="flex-grow: 1;">Starting Node</span>
@@ -76,9 +71,13 @@
                   />
                 </div>
                 <span style="flex-grow: 1;margin: 10px 0;">Version</span>
-                <el-select value="EN" placeholder="Version">
-                  <el-option label="English" value="EN"></el-option>
-                  <el-option label="Bahasa Indonesia" value="ID"></el-option>
+                <el-select :value="selectedVersion" placeholder="Version">
+                  <el-option
+                    v-for="(version) in availableVersions"
+                    :key="version.value"
+                    :label="version.label"
+                    :value="version.label"
+                  ></el-option>
                 </el-select>
                 <el-popover placement="buttom" width="200" trigger="hover" title="Version">
                   <div style="display: flex; flex-direction: column; flex-grow: 1;">
@@ -158,7 +157,7 @@
                       "
                     >Options</el-button>
                   </div>
-                </template> -->
+                </template>-->
                 <el-divider content-position="left">Settings</el-divider>
                 <!-- <div style="display: flex; flex-direction: column; flex-grow: 1;">
                   <el-button
@@ -193,14 +192,7 @@
                 circle
               ></el-button>
             </el-popover>
-            <el-button
-              v-else
-              icon="el-icon-arrow-right"
-              type="success"
-              size="mini"
-              plain
-              circle
-            ></el-button>
+            <el-button v-else icon="el-icon-arrow-right" type="success" size="mini" plain circle></el-button>
           </div>
         </div>
         <div class="node-label" :id="'label_' + id">
@@ -402,7 +394,9 @@ export default {
           // buttons: this.buttons.map(() => false)
         },
         cache: false
-      }
+      },
+      availableVersions: [],
+      selectedVersion: ""
       // nodeCategory: ["Rule", "Action", "Script", "Decision", "Fork", "Join"]
     };
   },
@@ -412,6 +406,7 @@ export default {
   mounted() {
     this.refreshButtons();
     this.refreshNodes();
+    this.getAvailableVersions();
   },
   watch: {
     buttons: {
@@ -484,6 +479,24 @@ export default {
     }
   },
   methods: {
+    getAvailableVersions() {
+      const allVersions = this.versions.map(version => {
+        const versionLabel = version.id.slice(
+          version.id.indexOf(":") + 1,
+          version.id.length
+        );
+        return {
+          value: version.id,
+          label: versionLabel
+        };
+      });
+      const result = [];
+      result.push({
+        value: "original",
+        label: "Original"
+      });
+      this.availableVersions = [...result, ...allVersions];
+    },
     refreshNodes() {
       const startElement = document.getElementsByClassName("node-start")[0];
       // const configElement = document.getElementsByClassName(
