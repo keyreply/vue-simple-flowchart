@@ -59,7 +59,9 @@
               :value="id"
               @input="$emit('update:id', $event)"
             />
-            <span v-else style="flex-grow: 1">{{ id }}</span>
+            <span v-else style="flex-grow: 1">{{
+              type === "node" ? id : label
+            }}</span>
             <i class="el-icon-warning tree-invalid-icon" v-if="invalid"></i>
             <el-popover
               v-if="type === 'node'"
@@ -225,11 +227,11 @@
               size="mini"
               plain
               circle
-              @click="jumpMethod()"
+              @click="jumpMethod(id)"
             ></el-button>
           </div>
         </div>
-        <div class="node-label" :id="'label_' + id">
+        <div v-if="type === 'node'" class="node-label" :id="'label_' + id">
           <div
             ref="labelTitle"
             class="node-label-title"
@@ -520,8 +522,8 @@ export default {
     }
   },
   methods: {
-    jumpMethod() {
-      this.$emit("jumpMethod", "lempar");
+    jumpMethod(id) {
+      this.$emit("jumpMethod", id);
     },
     refreshNodes() {
       const startElement = document.getElementsByClassName("node-start")[0];
@@ -819,7 +821,7 @@ $portSize: 16;
       color: black;
       font-size: 16px;
       font-weight: 600;
-      padding: 6px;
+      padding: 30px 6px;
     }
     .node-label {
       font-size: 14px;
