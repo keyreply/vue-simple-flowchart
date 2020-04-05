@@ -2,8 +2,14 @@
   <div @mouseup="itemRelease" @mousemove="itemMove">
     <div id="flowchart" class="flowchart" @dragstart="onDragStart">
       <div id="toolbar" class="flowchart-toolbar">
-        <div class="flowchart-toolbar-item" @mousedown="e => itemClick(e, 'Rule')">
-          <i class="el-icon-copy-document" style="font-size: 40px; margin-bottom: 10px;"></i>
+        <div
+          class="flowchart-toolbar-item"
+          @mousedown="e => itemClick(e, 'Rule')"
+        >
+          <i
+            class="el-icon-copy-document"
+            style="font-size: 40px; margin-bottom: 10px;"
+          ></i>
           <span>Content</span>
         </div>
       </div>
@@ -13,11 +19,15 @@
         id="flowchart-container"
         @tap="vtouch"
       >
-        <div @mousemove="handleMove" @mouseup="handleUp" @mousedown="handleDown">
+        <div
+          @mousemove="handleMove"
+          @mouseup="handleUp"
+          @mousedown="handleDown"
+        >
           <flowchart-node
             v-bind.sync="node"
+            @jumpMethod="$emit('jumpMethod', $event)"
             :showDrawer.sync="showDrawer"
-            :isLocked.sync="updateLine.lockedNodes[index]"
             @addingButtons="addingButtons(node.id, $event)"
             :startNodeTitle.sync="scene.startNodeTitle"
             v-for="(node, index) in scene.nodes"
@@ -62,6 +72,10 @@ import { getMousePosition } from "../assets/utilty/position";
 export default {
   name: "VueFlowchart",
   props: {
+    sceneId: {
+      type: String,
+      default: "default_id"
+    },
     scene: {
       type: Object,
       default() {
@@ -121,8 +135,7 @@ export default {
         status: false,
         toNodeId: null,
         buttonHeight: null,
-        buttonsLength: null,
-        lockedNodes: []
+        buttonsLength: null
       },
       shownNodes: [],
       links: [],
@@ -152,28 +165,13 @@ export default {
   watch: {
     "scene.nodes": {
       handler: function(val, old) {
-        if (val.length < old.length) {
-          // deleted condition
-          let deletedIndex = null;
-          let found = null;
-
-          old.forEach((item, index) => {
-            found = val.find(subitem => subitem.id === item.id);
-
-            if (!found) {
-              deletedIndex = index;
-            }
-          });
-          this.updateLine.lockedNodes = this.updateLine.lockedNodes.filter(
-            (item, index) => index !== deletedIndex
-          );
-        } else if (val.length > old.length) {
-          this.updateLine.lockedNodes = [...this.updateLine.lockedNodes, false];
-        }
+        /**
+         * this watcher is deleted soon, under review
+         */
         // this.filterShownNodes();
-        this.$nextTick(() => {
-          this.getLinks();
-        });
+        // this.$nextTick(() => {
+        //   this.getLinks();
+        // });
       },
       deep: true
     },
@@ -187,14 +185,19 @@ export default {
     }
   },
   mounted() {
+    /**
+     * This part is deleted soon, under review
+     */
     // this.filterShownNodes();
     this.rootDivOffset.top = this.$el ? this.$el.offsetTop : 0;
     this.rootDivOffset.left = this.$el ? this.$el.offsetLeft : 0;
-    this.updateLine.lockedNodes = this.scene.nodes.map(() => false);
     this.getLinks();
   },
   methods: {
     getLinks() {
+      /**
+       * This part needs to be reviewed!
+       */
       // const container = this.$refs.flowchartContainer;
       // const containerHeight = container
       //   ? container.$el
@@ -330,6 +333,9 @@ export default {
 
       this.links = lines;
     },
+    /**
+     * This part is deleted soon, under review
+     */
     // filterShownNodes() {
     //   const container = this.$refs.flowchartContainer;
     //   const containerHeight = container
@@ -450,7 +456,7 @@ export default {
         if (
           buttonId != null &&
           buttonId !== -1 &&
-          !this.updateLine.lockedNodes[index]
+          !this.scene.nodes[index].isLocked
         ) {
           buttonIndex = node.buttons.findIndex(
             button => button.id === buttonId && button.styleType === styleType
@@ -463,7 +469,7 @@ export default {
             buttonId === -1 &&
             this.draggingLink &&
             this.draggingLink.buttonIndex !== undefined &&
-            !this.updateLine.lockedNodes[index]
+            !this.scene.nodes[index].isLocked
           ) {
             // this line is important! -1 means the condition is in dragginglink
             buttonIndex = this.draggingLink.buttonIndex;
@@ -693,9 +699,12 @@ export default {
       );
     },
     nodeDelete(id) {
-      this.shownNodes = this.shownNodes.filter(node => {
-        return node.id !== id;
-      });
+      /**
+       * This part is deleted soon, under review
+       */
+      // this.shownNodes = this.shownNodes.filter(node => {
+      //   return node.id !== id;
+      // });
       this.scene.links = this.scene.links.filter(link => {
         return link.from !== id && link.to !== id;
       });
