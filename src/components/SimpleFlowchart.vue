@@ -2,14 +2,8 @@
   <div @mouseup="itemRelease" @mousemove="itemMove">
     <div id="flowchart" class="flowchart" @dragstart="onDragStart">
       <div id="toolbar" class="flowchart-toolbar">
-        <div
-          class="flowchart-toolbar-item"
-          @mousedown="e => itemClick(e, 'Rule')"
-        >
-          <i
-            class="el-icon-copy-document"
-            style="font-size: 40px; margin-bottom: 10px;"
-          ></i>
+        <div class="flowchart-toolbar-item" @mousedown="e => itemClick(e, 'Rule')">
+          <i class="el-icon-copy-document" style="font-size: 40px; margin-bottom: 10px;"></i>
           <span>Content</span>
         </div>
       </div>
@@ -19,11 +13,7 @@
         id="flowchart-container"
         @tap="vtouch"
       >
-        <div
-          @mousemove="handleMove"
-          @mouseup="handleUp"
-          @mousedown="handleDown"
-        >
+        <div @mousemove="handleMove" @mouseup="handleUp" @mousedown="handleDown">
           <flowchart-node
             v-bind.sync="node"
             @jumpMethod="$emit('jumpMethod', $event)"
@@ -40,6 +30,7 @@
             @updateButtonText="updateButtonText(node.id, $event)"
             @deleteButtonNode="deleteButtonNode(node.id, $event)"
             @nodeDelete="nodeDelete(node.id)"
+            @onChangeVersion="(label) => onChangeVersion(label, node.id)"
             :foundIsStart="foundIsStart"
           ></flowchart-node>
           <svg width="100%" :height="`${height}px`">
@@ -194,6 +185,9 @@ export default {
     this.getLinks();
   },
   methods: {
+    onChangeVersion(label, nodeId) {
+      this.$emit("onChangeVersion", label, nodeId);
+    },
     getLinks() {
       /**
        * This part needs to be reviewed!

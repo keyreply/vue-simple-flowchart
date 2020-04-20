@@ -46,7 +46,7 @@
                 $emit('update:isLocked', !isLocked);
                 delay();
               "
-            ></el-button> -->
+            ></el-button>-->
             <!-- <el-select
               v-if="editing.type"
               :value="type"
@@ -59,16 +59,13 @@
               :value="id"
               @input="$emit('update:id', $event)"
             />
-            <span v-else style="flex-grow: 1">{{
+            <span v-else style="flex-grow: 1">
+              {{
               type === "node" ? id : label
-            }}</span>
+              }}
+            </span>
             <i class="el-icon-warning tree-invalid-icon" v-if="invalid"></i>
-            <el-popover
-              v-if="type === 'node'"
-              placement="right-start"
-              width="200"
-              trigger="hover"
-            >
+            <el-popover v-if="type === 'node'" placement="right-start" width="200" trigger="hover">
               <div style="display: flex; flex-direction: column;">
                 <div style="display: flex;">
                   <span style="flex-grow: 1;">Starting Node</span>
@@ -79,7 +76,7 @@
                       $emit('update:isStart', !isStart);
                       delay();
                     "
-                  /> -->
+                  />-->
                   <el-switch
                     disabled
                     :value="isStart"
@@ -90,18 +87,17 @@
                   />
                 </div>
                 <span style="flex-grow: 1;margin: 10px 0;">Version</span>
-                <el-popover
-                  placement="buttom"
-                  width="200"
-                  trigger="hover"
-                  title="Select Version"
-                >
+                <el-popover placement="buttom" width="200" trigger="hover" title="Select Version">
                   <div
                     v-for="version in availableVersions"
                     :key="version.value"
                     style="display: flex; flex-direction: column; flex-grow: 1;"
                   >
-                    <el-button type="text" plain>{{ version.label }}</el-button>
+                    <el-button
+                      @click="$emit('onChangeVersion', version.label)"
+                      type="text"
+                      plain
+                    >{{ version.label }}</el-button>
                   </div>
                   <div
                     slot="reference"
@@ -192,16 +188,13 @@
                     @click="showingDrawer"
                   >Show Configurations</el-button>
                 </div>-->
-                <div
-                  style="display: flex; flex-direction: column; flex-grow: 1;"
-                >
+                <div style="display: flex; flex-direction: column; flex-grow: 1;">
                   <el-button
                     icon="el-icon-delete"
                     type="danger"
                     disabled
                     @click="$emit('nodeDelete')"
-                    >Delete this node</el-button
-                  >
+                  >Delete this node</el-button>
                 </div>
               </div>
               <el-button
@@ -225,11 +218,7 @@
           </div>
         </div>
         <div v-if="type === 'node'" class="node-label" :id="'label_' + id">
-          <div
-            ref="labelTitle"
-            class="node-label-title"
-            :id="'label-title_' + id"
-          >
+          <div ref="labelTitle" class="node-label-title" :id="'label-title_' + id">
             <el-input
               v-if="editing.label && !isLocked"
               type="textarea"
@@ -275,9 +264,7 @@
                   v-show="editing.options.value && button.show"
                   class="button-delete"
                   @click="$emit('deleteButtonNode', button.id)"
-                >
-                  &times;
-                </div>
+                >&times;</div>
               </div>
               <div
                 class="node-port node-output"
@@ -409,6 +396,12 @@ export default {
       type: Boolean,
       default() {
         return false;
+      }
+    },
+    onChangeType: {
+      type: Function,
+      default() {
+        return () => {};
       }
     }
   },
